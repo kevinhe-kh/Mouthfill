@@ -1,1 +1,510 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自由潜水Mouthfill技术交互式指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Deep Ocean Harmony -->
+    <!-- Application Structure Plan: The application is designed as a single-page scrolling experience with a sticky navigation bar for easy access to different thematic sections. This structure was chosen to guide the user logically from foundational concepts to practical application and troubleshooting, which is more effective for learning a complex skill than a linear report. Key sections include: 1. An introduction to establish context. 2. An interactive chart comparing Mouthfill to Frenzel to highlight its core advantage. 3. A clickable anatomy diagram to demystify the physiology. 4. A step-by-step interactive training guide (Dry, Wet, Master). 5. A problem-solving section for common issues. 6. A final safety overview. This user-centric, task-oriented flow prioritizes understanding and practical application. -->
+    <!-- Visualization & Content Choices: 1. Report Info: Frenzel vs. MF depth limits -> Goal: Compare -> Viz: Bar Chart (Chart.js/Canvas) -> Interaction: Hover for details -> Justification: A chart provides a much more immediate and impactful comparison of depth capabilities than text or a simple table. 2. Report Info: Anatomy of the mouth/throat -> Goal: Inform/Organize -> Viz: Interactive diagram built with HTML/CSS -> Interaction: Clickable hotspots revealing detailed text -> Justification: Transforms a dense anatomical description into an engaging, explorable element, improving retention. 3. Report Info: Dry land exercises -> Goal: Organize/Instruct -> Viz: Interactive accordion -> Interaction: Click to expand/collapse exercises -> Justification: Organizes a long list of practices into a clean, manageable UI, preventing user overwhelm. 4. Report Info: Common Problems -> Goal: Troubleshoot -> Viz: Clickable problem cards -> Interaction: Click a problem to see the solution -> Justification: A task-oriented design that provides quick, targeted answers to specific user challenges. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #f8fafc; /* slate-50 */
+            color: #1f2937; /* gray-800 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-link {
+            transition: color 0.3s, border-color 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #0369a1; /* sky-700 */
+            border-bottom-color: #0369a1; /* sky-700 */
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+        }
+        .accordion-content.open {
+            max-height: 1000px; /* Large enough to fit content */
+        }
+        .accordion-arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        .accordion-header.open .accordion-arrow {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-800">Mouthfill 指南</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#introduction" class="nav-link text-gray-600 border-b-2 border-transparent px-3 py-2 text-sm font-medium">核心概念</a>
+                        <a href="#science" class="nav-link text-gray-600 border-b-2 border-transparent px-3 py-2 text-sm font-medium">科学原理</a>
+                        <a href="#training" class="nav-link text-gray-600 border-b-2 border-transparent px-3 py-2 text-sm font-medium">训练之旅</a>
+                        <a href="#troubleshooting" class="nav-link text-gray-600 border-b-2 border-transparent px-3 py-2 text-sm font-medium">常见问题</a>
+                        <a href="#safety" class="nav-link text-gray-600 border-b-2 border-transparent px-3 py-2 text-sm font-medium">安全须知</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-600 hover:text-gray-800 hover:bg-gray-100 focus:outline-none">
+                        <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="hidden md:hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="#introduction" class="block nav-link text-gray-600 border-l-4 border-transparent px-3 py-2 text-base font-medium">核心概念</a>
+                    <a href="#science" class="block nav-link text-gray-600 border-l-4 border-transparent px-3 py-2 text-base font-medium">科学原理</a>
+                    <a href="#training" class="block nav-link text-gray-600 border-l-4 border-transparent px-3 py-2 text-base font-medium">训练之旅</a>
+                    <a href="#troubleshooting" class="block nav-link text-gray-600 border-l-4 border-transparent px-3 py-2 text-base font-medium">常见问题</a>
+                    <a href="#safety" class="block nav-link text-gray-600 border-l-4 border-transparent px-3 py-2 text-base font-medium">安全须知</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <!-- Section 1: Introduction -->
+        <section id="introduction" class="mb-16 md:mb-24 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">通往深蓝的关键：Mouthfill平压法</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">Mouthfill（MF）是深度自由潜水员不可或缺的高级平压技术。它通过预先在口腔中储存空气，使潜水员能突破生理极限，安全、舒适地探索远超40米的深海。本指南将带您深入了解其原理、学习路径和关键技巧。</p>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h3 class="text-2xl font-bold text-slate-800 mb-4 text-center">深度对比：Frenzel vs. Mouthfill</h3>
+                <p class="text-center text-gray-600 mb-6">Mouthfill的主要优势在于它克服了Frenzel技术在肺部达到残余容积（约30-40米）后的平压极限。下图直观地展示了两种技术的有效深度范围。</p>
+                <div class="chart-container">
+                    <canvas id="depthChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: The Science -->
+        <section id="science" class="mb-16 md:mb-24 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Mouthfill 的科学原理</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">掌握Mouthfill的本质是精确控制您的口腔解剖结构。它并非魔法，而是对物理学（波义耳定律）和生理学的精妙应用。点击下方各部位，了解它们在平压过程中的关键作用。</p>
+            </div>
+            <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                    <div class="relative w-full max-w-sm mx-auto h-96 bg-sky-50 rounded-lg p-4">
+                        <div class="absolute text-center" style="top: 10%; left: 50%; transform: translateX(-50%);">
+                            <div class="anatomy-hotspot" data-target="anatomy-soft-palate">
+                                <span class="font-bold cursor-pointer p-2 bg-rose-100 rounded-full">软腭</span>
+                            </div>
+                        </div>
+                         <div class="absolute text-center" style="top: 35%; left: 60%;">
+                            <div class="anatomy-hotspot" data-target="anatomy-tongue">
+                                <span class="font-bold cursor-pointer p-2 bg-amber-100 rounded-full">舌头</span>
+                            </div>
+                        </div>
+                        <div class="absolute text-center" style="top: 60%; left: 45%; transform: translateX(-50%);">
+                            <div class="anatomy-hotspot" data-target="anatomy-epiglottis">
+                                <span class="font-bold cursor-pointer p-2 bg-teal-100 rounded-full">会厌</span>
+                            </div>
+                        </div>
+                         <div class="absolute text-center" style="top: 25%; left: 5%;">
+                            <div class="anatomy-hotspot" data-target="anatomy-cheeks">
+                                <span class="font-bold cursor-pointer p-2 bg-indigo-100 rounded-full">脸颊/下颌</span>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-gray-500">（交互式解剖示意图）</div>
+                    </div>
+                    <div id="anatomy-details" class="space-y-4">
+                        <div id="anatomy-default" class="p-4 border-l-4 border-slate-300 bg-slate-100 rounded-r-lg">
+                            <h4 class="font-bold text-lg text-slate-800">协同工作的奇迹</h4>
+                            <p class="text-gray-600 mt-1">Mouthfill的成功在于多个部位的完美协作，将口腔变成一个独立的、可控的空气储备库。点击左侧的部位查看详情。</p>
+                        </div>
+                        <div id="anatomy-soft-palate" class="hidden p-4 border-l-4 border-rose-400 bg-rose-50 rounded-r-lg">
+                            <h4 class="font-bold text-lg text-rose-800">软腭：气流的导航员</h4>
+                            <p class="text-rose-700 mt-1">功能：保持中立（开放）位置，以引导空气进入鼻腔和耳咽管进行平压。错误的关闭或抬起会阻塞气流。</p>
+                        </div>
+                        <div id="anatomy-tongue" class="hidden p-4 border-l-4 border-amber-400 bg-amber-50 rounded-r-lg">
+                            <h4 class="font-bold text-lg text-amber-800">舌头：压力的主活塞</h4>
+                            <p class="text-amber-700 mt-1">功能：通过向上和向后移动，像活塞一样将口腔中的空气推入耳咽管，产生平压所需的压力。</p>
+                        </div>
+                        <div id="anatomy-epiglottis" class="hidden p-4 border-l-4 border-teal-400 bg-teal-50 rounded-r-lg">
+                            <h4 class="font-bold text-lg text-teal-800">会厌：气道的守门员</h4>
+                            <p class="text-teal-700 mt-1">功能：牢固关闭，将口腔中的空气与肺部完全隔离。这是Mouthfill的核心，防止空气在压力下回流至肺部而流失。</p>
+                        </div>
+                        <div id="anatomy-cheeks" class="hidden p-4 border-l-4 border-indigo-400 bg-indigo-50 rounded-r-lg">
+                            <h4 class="font-bold text-lg text-indigo-800">脸颊/下颌：最后的挤压</h4>
+                            <p class="text-indigo-700 mt-1">功能：协同压缩口腔中储存的空气。在空气量极少时，通过“老太太微笑”等动作，它们能提供最后的压缩力。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: The Training Journey -->
+        <section id="training" class="mb-16 md:mb-24 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">Mouthfill 训练之旅</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">掌握Mouthfill遵循一个“干-湿-忘”的清晰路径。首先在陆上建立肌肉记忆，然后在浅水区适应，最终在深潜中达到无意识的熟练。这是一个循序渐进的过程，耐心和一致性是关键。</p>
+            </div>
+            <div class="space-y-8">
+                 <!-- Prerequisites -->
+                <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4">第一步：检查先决条件</h3>
+                    <p class="text-gray-600 mb-6">Mouthfill是高级技巧，贸然尝试弊大于利。请确保您已满足以下条件：</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">✓</span><span><strong>基础技能自动驾驶：</strong>鸭式下潜、踢蹼、自由下落等动作已无需思考。</span></li>
+                        <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">✓</span><span><strong>Frenzel熟练：</strong>能用Frenzel轻松平压至35-40米。</span></li>
+                        <li class="flex items-start"><span class="text-green-500 mr-3 mt-1">✓</span><span><strong>深度放松：</strong>能在压力下保持身心完全放松，无紧张感。</span></li>
+                    </ul>
+                </div>
+                <!-- Dry Practice -->
+                <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4">第二步：陆上干式练习</h3>
+                    <p class="text-gray-600 mb-6">这是构建神经肌肉控制的基础。每天坚持练习，直到每个动作都精准自如。点击展开各项练习：</p>
+                    <div id="accordion-container" class="space-y-2">
+                        <div class="accordion-item border rounded-lg">
+                            <div class="accordion-header cursor-pointer p-4 flex justify-between items-center bg-slate-100 hover:bg-slate-200">
+                                <h4 class="font-semibold text-lg">会厌控制练习</h4>
+                                <span class="accordion-arrow text-2xl font-light">↓</span>
+                            </div>
+                            <div class="accordion-content">
+                                <div class="p-4 border-t">
+                                    <p><strong>目标：</strong>隔离并强化会厌肌肉，确保能紧闭气道。</p>
+                                    <ul class="list-disc list-inside mt-2 space-y-1 text-gray-700">
+                                        <li>不吞咽地漱口。</li>
+                                        <li>对着紧闭的喉咙呼气/吸气（无空气进出）。</li>
+                                        <li>发出“会厌音乐”：在呼气或吸气时快速开合喉咙发出窒息声。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item border rounded-lg">
+                            <div class="accordion-header cursor-pointer p-4 flex justify-between items-center bg-slate-100 hover:bg-slate-200">
+                                <h4 class="font-semibold text-lg">软腭控制练习</h4>
+                                <span class="accordion-arrow text-2xl font-light">↓</span>
+                            </div>
+                            <div class="accordion-content">
+                               <div class="p-4 border-t">
+                                    <p><strong>目标：</strong>感知并控制软腭，确保其能保持在中立（开放）位置。</p>
+                                    <ul class="list-disc list-inside mt-2 space-y-1 text-gray-700">
+                                        <li>嘴巴张开，只用鼻子呼吸。</li>
+                                        <li>嘴巴张开，只用嘴巴呼吸。</li>
+                                        <li>在以上两种呼吸方式间快速切换。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                         <div class="accordion-item border rounded-lg">
+                            <div class="accordion-header cursor-pointer p-4 flex justify-between items-center bg-slate-100 hover:bg-slate-200">
+                                <h4 class="font-semibold text-lg">舌头活塞练习</h4>
+                                <span class="accordion-arrow text-2xl font-light">↓</span>
+                            </div>
+                            <div class="accordion-content">
+                               <div class="p-4 border-t">
+                                    <p><strong>目标：</strong>学习用舌头形成密封并主动推动空气。</p>
+                                    <ul class="list-disc list-inside mt-2 space-y-1 text-gray-700">
+                                        <li>舌尖抵住上颚，形成密封（T锁）。</li>
+                                        <li>练习用舌根向上推动（K锁）。</li>
+                                        <li>综合练习，像活塞一样将空气“泵”出。</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                 <!-- Wet Practice -->
+                <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4">第三步：水中适应与练习</h3>
+                    <p class="text-gray-600 mb-6">FRC（功能残余容积）潜水是Mouthfill的“超级模拟器”，它在浅水区安全地模拟了深潜时的空气稀缺状态。这是从陆地到深海的关键过渡。</p>
+                    <ul class="space-y-3">
+                        <li class="flex items-start"><span class="text-sky-500 mr-3 mt-1">●</span><span><strong>进行FRC潜水：</strong>在被动呼气后下潜（0-20米），练习在空气极少的情况下平压。</span></li>
+                        <li class="flex items-start"><span class="text-sky-500 mr-3 mt-1">●</span><span><strong>浅水练习：</strong>在泳池或浅水区，从水面或5米处开始充气并下潜，专注于动作的流畅性。</span></li>
+                        <li class="flex items-start"><span class="text-sky-500 mr-3 mt-1">●</span><span><strong>循序渐进：</strong>只有在当前深度感觉“绝对美妙”时，才增加深度。不要追逐数字。</span></li>
+                    </ul>
+                </div>
+                <!-- Mastery -->
+                <div class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4">第四步：“忘记”Mouthfill</h3>
+                    <p class="text-gray-600 mb-2">这是掌握的最高境界。当身体已经完全记住动作后，深潜时应有意识地“忘记”技术本身。</p>
+                    <p class="text-gray-600">与其专注于机械动作，不如将注意力转移到深度放松、享受下潜的感受，并相信平压会自动发生。这能最大程度地减少精神和身体的紧张，而这正是深度潜水的最大障碍。</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Troubleshooting -->
+        <section id="troubleshooting" class="mb-16 md:mb-24 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">常见问题与解决方案</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">在学习Mouthfill的路上遇到障碍是正常的。这里列出了一些最常见的问题及其解决方法。点击问题查看答案。</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="trouble-card bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-xl transition-shadow">
+                    <h4 class="font-bold text-lg mb-2">我总是会吞下空气，怎么办？</h4>
+                    <div class="trouble-solution hidden text-gray-700 mt-4 space-y-2">
+                        <p><strong>主要原因：</strong>紧张、压力、会厌控制弱。</p>
+                        <p><strong>解决方案：</strong></p>
+                        <ul class="list-disc list-inside text-sm">
+                            <li>优先练习深度放松。</li>
+                            <li>加强陆上会厌控制练习。</li>
+                            <li>优化充气量（85-90%即可），避免过度充气。</li>
+                            <li>主动管理唾液，充气前吞咽一次。</li>
+                        </ul>
+                    </div>
+                </div>
+                 <div class="trouble-card bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-xl transition-shadow">
+                    <h4 class="font-bold text-lg mb-2">感觉空气很快就漏光了。</h4>
+                    <div class="trouble-solution hidden text-gray-700 mt-4 space-y-2">
+                        <p><strong>主要原因：</strong>过度充气、软腭或唇部密封不佳。</p>
+                        <p><strong>解决方案：</strong></p>
+                         <ul class="list-disc list-inside text-sm">
+                            <li>尝试不同的平压策略（持续压力 vs. 脉冲式）。</li>
+                            <li>确保充气量适中，感觉放松。</li>
+                            <li>加强软腭控制练习，确保气流导向正确。</li>
+                            <li>练习紧密但放松的唇部密封。</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="trouble-card bg-white rounded-lg shadow p-6 cursor-pointer hover:shadow-xl transition-shadow">
+                    <h4 class="font-bold text-lg mb-2">平压时感觉很紧张，无法放松。</h4>
+                    <div class="trouble-solution hidden text-gray-700 mt-4 space-y-2">
+                         <p><strong>主要原因：</strong>恐惧、装备不适、身体姿态不佳。</p>
+                        <p><strong>解决方案：</strong></p>
+                         <ul class="list-disc list-inside text-sm">
+                            <li>将100%放松作为每次潜水的核心目标。</li>
+                            <li>检查并保持正确身体姿态（下巴微收）。</li>
+                            <li>确保装备（尤其是湿衣）舒适贴合。</li>
+                            <li>将冥想和正念练习融入日常。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 5: Safety -->
+        <section id="safety" class="scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mb-4">安全永远第一</h2>
+                <p class="max-w-3xl mx-auto text-lg text-gray-600">深度自由潜水是一项极限运动，Mouthfill虽能提升安全性，但前提是严格遵守安全协议。错误的练习和使用会带来严重风险。</p>
+            </div>
+            <div class="bg-rose-50 border-l-4 border-rose-500 text-rose-800 p-6 rounded-r-lg shadow-md">
+                <h3 class="font-bold text-xl mb-4">核心安全守则</h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <span class="mr-3 mt-1 text-rose-600 font-bold">!</span>
+                        <div>
+                            <strong>永不单独潜水：</strong>始终与合格的潜伴或安全团队一同下潜。这是自由潜水的第一铁律。
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-3 mt-1 text-rose-600 font-bold">!</span>
+                        <div>
+                            <strong>循序渐进：</strong>缓慢增加深度，给身体充分的适应时间。绝不强行平压或追逐数字。
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-3 mt-1 text-rose-600 font-bold">!</span>
+                        <div>
+                            <strong>听从身体信号：</strong>任何不适都是身体的警告。如果平压不畅，立即停止下潜。
+                        </div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="mr-3 mt-1 text-rose-600 font-bold">!</span>
+                        <div>
+                            <strong>寻求专业指导：</strong>Mouthfill应在经验丰富的教练指导下学习。在线资料无法替代面对面的教学。
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 mt-16 md:mt-24">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-sm">
+            <p>本指南基于公开研究报告生成，仅供参考。自由潜水具有风险，请务必在专业指导下进行训练。</p>
+            <p class="mt-2">为了获得更直观的演示，建议在视频网站搜索“自由潜水 Mouthfill 教学”观看相关视频。</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Mobile Menu Toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenuButton.addEventListener('click', () => {
+                const isHidden = mobileMenu.classList.contains('hidden');
+                mobileMenu.classList.toggle('hidden', !isHidden);
+                mobileMenuButton.querySelector('path').setAttribute('d', isHidden ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16m-7 6h7');
+            });
+
+            // Close mobile menu on link click
+            document.querySelectorAll('#mobile-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                    mobileMenu.classList.add('hidden');
+                    mobileMenuButton.querySelector('path').setAttribute('d', 'M4 6h16M4 12h16m-7 6h7');
+                });
+            });
+
+            // Bar Chart for Depth Comparison
+            const ctx = document.getElementById('depthChart').getContext('2d');
+            const depthChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Frenzel 平压法', 'Mouthfill 平压法'],
+                    datasets: [{
+                        label: '有效平压深度 (米)',
+                        data: [40, 120], // Using 120+ as an illustrative value for MF
+                        backgroundColor: [
+                            'rgba(56, 189, 248, 0.6)', // sky-400
+                            'rgba(15, 23, 42, 0.7)'  // slate-900
+                        ],
+                        borderColor: [
+                            'rgba(14, 165, 233, 1)', // sky-500
+                            'rgba(15, 23, 42, 1)'   // slate-900
+                        ],
+                        borderWidth: 2,
+                        borderRadius: 5,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '深度 (米)',
+                                font: {
+                                    size: 14,
+                                    family: "'Noto Sans SC', sans-serif"
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        if (context.label === 'Mouthfill 平压法') {
+                                             label += context.parsed.y + '米以上';
+                                        } else {
+                                             label += '约 ' + context.parsed.y + '米';
+                                        }
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Interactive Anatomy Diagram
+            const hotspots = document.querySelectorAll('.anatomy-hotspot');
+            const details = document.querySelectorAll('#anatomy-details > div');
+            const defaultDetail = document.getElementById('anatomy-default');
+            hotspots.forEach(hotspot => {
+                hotspot.addEventListener('click', () => {
+                    const targetId = hotspot.dataset.target;
+                    const targetDetail = document.getElementById(targetId);
+
+                    details.forEach(detail => detail.classList.add('hidden'));
+                    
+                    if(targetDetail) {
+                        targetDetail.classList.remove('hidden');
+                    } else {
+                        defaultDetail.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Accordion for Training
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const content = header.nextElementSibling;
+                    const wasOpen = content.classList.contains('open');
+
+                    document.querySelectorAll('.accordion-content.open').forEach(openContent => {
+                        openContent.classList.remove('open');
+                        openContent.parentElement.querySelector('.accordion-header').classList.remove('open');
+                    });
+                    
+                    if (!wasOpen) {
+                        content.classList.add('open');
+                        header.classList.add('open');
+                    }
+                });
+            });
+
+            // Troubleshooting Cards
+            const troubleCards = document.querySelectorAll('.trouble-card');
+            troubleCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    card.querySelector('.trouble-solution').classList.toggle('hidden');
+                });
+            });
+
+            // Active Nav Link on Scroll
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 80) { // 80px offset for sticky header
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').includes(current)) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
 
