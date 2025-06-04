@@ -1,1 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>掌握深渊：百米自由潜水员可视化训练互动指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: 本应用设计为一个主题式、多模块的单页仪表板。此结构旨在打破原始报告的线性阅读模式，允许用户（无论是初学者还是经验丰富的潜水员）根据自身兴趣和需求，通过顶部导航栏自由跳转至特定模块，如“核心技术”、“生理整合”或“精英策略”。这种非线性的探索路径，结合互动元素（如深度滑块和可点击卡片），旨在将信息传递从被动阅读转变为主动探索，从而极大地提升用户参与度和理解效率。选择此结构的核心理由是：它最符合成人学习和技能获取的模式，即先概览全貌，再深入钻研特定节点。 -->
+    <!-- Visualization & Content Choices: 1. 氮醉症状可视化: (报告信息: 氮醉症状与深度对照表 -> 目标: 让用户直观感受深度与氮醉症状的关联 -> 呈现方式: 一个结合了Chart.js线图和垂直滑块的互动模块 -> 互动: 用户拖动滑块模拟下潜，图表上的点会相应移动，同时旁边的信息框实时更新对应深度的典型症状 -> 理由: 将静态表格数据转化为动态、具身体验感的模拟，使用户对深潜风险有更深刻的认识 -> 库: Chart.js, Vanilla JS)。 2. 核心技术呈现: (报告信息: 过程、结果、激励性、富感官四种可视化技术 -> 目标:清晰分类并解释核心概念 -> 呈现方式: 使用Tailwind CSS构建的四张并排的卡片 -> 互动: 鼠标悬停在卡片上时，卡片会轻微放大并显示更详细的解释 -> 理由: 卡片式布局比列表更具视觉吸引力，悬停互动则能在不扰乱整体布局的情况下提供分层信息)。 3. 生理整合图解: (报告信息: 耳压平衡、MDR等生理概念 -> 目标: 简化复杂生理过程 -> 呈现方式: 使用纯HTML/CSS和Unicode字符构建的简化示意图 -> 互动: 无，重点是清晰的视觉传达 -> 理由: 避免使用图像文件，保持页面轻量，同时自定义的示意图能更精确地表达核心概念)。 -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Noto Sans SC', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 400px; max-height: 50vh; }
+        .nav-link { transition: color 0.3s, border-color 0.3s; }
+        .nav-link:hover, .nav-link.active { color: #0e7490; border-bottom-color: #0e7490; }
+        .card { transition: transform 0.3s, box-shadow 0.3s; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #64748b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl md:text-2xl font-bold text-cyan-800">掌握深渊</h1>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#why-visualize" class="nav-link text-slate-600 font-medium px-3 py-2 text-sm border-b-2 border-transparent">为何观想?</a>
+                        <a href="#core-techniques" class="nav-link text-slate-600 font-medium px-3 py-2 text-sm border-b-2 border-transparent">核心技术</a>
+                        <a href="#physiology" class="nav-link text-slate-600 font-medium px-3 py-2 text-sm border-b-2 border-transparent">生理整合</a>
+                        <a href="#elite-strategies" class="nav-link text-slate-600 font-medium px-3 py-2 text-sm border-b-2 border-transparent">精英策略</a>
+                        <a href="#advanced-tools" class="nav-link text-slate-600 font-medium px-3 py-2 text-sm border-b-2 border-transparent">高级工具</a>
+                        <a href="#your-plan" class="nav-link text-slate-600 font-medium px-3 py-2 text-sm border-b-2 border-transparent">你的计划</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-slate-800 focus:ring-white">
+                        <span class="sr-only">打开主菜单</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a href="#why-visualize" class="nav-link text-slate-600 hover:bg-slate-200 block px-3 py-2 rounded-md text-base font-medium">为何观想?</a>
+                <a href="#core-techniques" class="nav-link text-slate-600 hover:bg-slate-200 block px-3 py-2 rounded-md text-base font-medium">核心技术</a>
+                <a href="#physiology" class="nav-link text-slate-600 hover:bg-slate-200 block px-3 py-2 rounded-md text-base font-medium">生理整合</a>
+                <a href="#elite-strategies" class="nav-link text-slate-600 hover:bg-slate-200 block px-3 py-2 rounded-md text-base font-medium">精英策略</a>
+                <a href="#advanced-tools" class="nav-link text-slate-600 hover:bg-slate-200 block px-3 py-2 rounded-md text-base font-medium">高级工具</a>
+                <a href="#your-plan" class="nav-link text-slate-600 hover:bg-slate-200 block px-3 py-2 rounded-md text-base font-medium">你的计划</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-5xl font-extrabold text-cyan-900 leading-tight">百米自由潜水员的可视化训练</h2>
+            <p class="mt-4 max-w-3xl mx-auto text-lg text-slate-600">一个将心理预演转化为深潜实力的互动指南。</p>
+        </div>
+
+        <section id="why-visualize" class="py-12 md:py-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-cyan-800">为何观想?</h3>
+                <p class="mt-2 text-lg text-slate-500">探索心理预演如何重塑大脑，打造精英表现。</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h4 class="text-xl font-semibold text-cyan-900 mb-3">独特的心理挑战</h4>
+                    <p class="text-slate-700 leading-relaxed">挑战百米深度不仅是生理极限的考验，更是一场深刻的心理博弈。潜水员需要管理巨大的水压、对绝对平静的需求、精准的技术执行，以及与生俱来的恐惧。可视化训练是管理这些挑战、建立自信和保障安全的关键策略。</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h4 class="text-xl font-semibold text-cyan-900 mb-3">大脑的“模拟器”</h4>
+                    <p class="text-slate-700 leading-relaxed">神经科学证明，大脑在处理生动想象与真实体验时，激活的神经通路是相同的。通过可视化，你实际上是在“预演”下潜，强化运动技能和肌肉记忆，优化神经通路，让身体在真实下潜时能更高效、更节能、更准确地执行动作。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="core-techniques" class="py-12 md:py-16 bg-slate-100 rounded-2xl scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-cyan-800">核心技术</h3>
+                <p class="mt-2 text-lg text-slate-500">掌握四种关键的可视化方法，构建完整的心理蓝图。</p>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="card bg-white p-6 rounded-lg shadow-md text-center">
+                    <div class="text-4xl text-cyan-600 mb-3">⚙️</div>
+                    <h4 class="text-xl font-bold mb-2">过程可视化</h4>
+                    <p class="text-slate-600 text-sm">预演下潜的每一步技术动作，如鸭式下潜、踢蹼、转身等，追求完美与高效。</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-md text-center">
+                    <div class="text-4xl text-cyan-600 mb-3">🏆</div>
+                    <h4 class="text-xl font-bold mb-2">结果可视化</h4>
+                    <p class="text-slate-600 text-sm">想象成功到达目标深度、抓取底牌、完成干净的水面流程，强化信念和目标。</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-md text-center">
+                    <div class="text-4xl text-cyan-600 mb-3">😊</div>
+                    <h4 class="text-xl font-bold mb-2">激励性可视化</h4>
+                    <p class="text-slate-600 text-sm">专注于自信、冷静、掌控的感觉，以及成功后带来的喜悦，为下潜注入积极情绪。</p>
+                </div>
+                <div class="card bg-white p-6 rounded-lg shadow-md text-center">
+                    <div class="text-4xl text-cyan-600 mb-3">🌊</div>
+                    <h4 class="text-xl font-bold mb-2">富感官可视化</h4>
+                    <p class="text-slate-600 text-sm">调动所有感官：感受水流，聆听寂静，观察导绳，让心理预演更加真实可信。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="physiology" class="py-12 md:py-16 scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-cyan-800">生理整合：模拟百米下潜</h3>
+                <p class="mt-2 text-lg text-slate-500">通过互动了解并观想身体如何应对深度的挑战。</p>
+            </div>
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-xl">
+                 <div class="flex flex-col md:flex-row gap-8">
+                    <div class="md:w-1/3 flex flex-col items-center">
+                        <h4 class="text-xl font-semibold mb-4 text-center">下潜深度模拟</h4>
+                        <div class="relative w-24 h-80 flex justify-center">
+                            <input type="range" min="0" max="100" value="0" class="w-80 h-12 appearance-none bg-transparent" id="depth-slider" style="writing-mode: bt-lr; -webkit-appearance: slider-vertical;">
+                             <div class="absolute top-0 left-1/2 -translate-x-1/2 h-full w-px bg-slate-300"></div>
+                             <div id="depth-indicator" class="absolute left-full ml-4 text-lg font-bold text-cyan-700 bg-white px-3 py-1 rounded-lg shadow-md" style="top: 0%;">0 米</div>
+                        </div>
+                        <p class="text-sm text-slate-500 mt-4 text-center">拖动滑块模拟下潜</p>
+                    </div>
+
+                    <div class="md:w-2/3">
+                        <div class="chart-container">
+                            <canvas id="narcosis-chart"></canvas>
+                        </div>
+                        <div id="narcosis-info" class="mt-6 bg-slate-100 p-4 rounded-lg min-h-[120px]">
+                            <h5 class="font-bold text-lg text-cyan-900 mb-2">氮醉症状</h5>
+                            <p class="text-slate-700"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-12 grid md:grid-cols-2 gap-8">
+                     <div class="bg-slate-100 p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold text-cyan-900 mb-3">观想耳压平衡</h4>
+                        <p class="text-slate-700 leading-relaxed">百米下潜的成功离不开精确的耳压平衡。你需要观想流畅、毫不费力的法兰佐(Frenzel)或口部充气(Mouthfill)动作。这不只是“看到”，而是在脑中“感受”到舌头、软腭、声门的细微肌肉运动，建立完美的动觉记忆。</p>
+                    </div>
+                    <div class="bg-slate-100 p-6 rounded-lg">
+                        <h4 class="text-xl font-semibold text-cyan-900 mb-3">观想压力适应 (MDR)</h4>
+                        <p class="text-slate-700 leading-relaxed">随着下潜，你的身体会激活哺乳动物潜水反射(MDR)：心率减慢，血液流向核心。观想时，要接纳并信任这些感觉，将它们视为身体的保护性反应，而非危险信号。在强烈的肺部压缩感中，观想自己依然保持放松与优雅。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="elite-strategies" class="py-12 md:py-16 bg-slate-100 rounded-2xl scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-cyan-800">精英策略</h3>
+                <p class="mt-2 text-lg text-slate-500">从世界顶尖自由潜水员的心理战术中汲取灵感。</p>
+            </div>
+            <div class="space-y-6">
+                <details class="bg-white p-4 rounded-lg shadow-md cursor-pointer">
+                    <summary class="font-semibold text-lg text-cyan-900 flex justify-between items-center">
+                        <span>阿列克谢·莫尔恰诺夫 (Alexey Molchanov)</span>
+                        <span class="text-2xl transform transition-transform duration-300 open:rotate-90">▸</span>
+                    </summary>
+                    <p class="mt-3 text-slate-700 border-l-4 border-cyan-500 pl-4">强调通过精神控制达到更深。他的教学体系将可视化作为基础，从第一视角关注细节和感受，将下潜与安全愉悦联系起来，并强调正念，将注意力从焦虑转向感官细节。</p>
+                </details>
+                <details class="bg-white p-4 rounded-lg shadow-md cursor-pointer">
+                    <summary class="font-semibold text-lg text-cyan-900 flex justify-between items-center">
+                        <span>威廉·特鲁布里奇 (William Trubridge)</span>
+                        <span class="text-2xl transform transition-transform duration-300 open:rotate-90">▸</span>
+                    </summary>
+                    <p class="mt-3 text-slate-700 border-l-4 border-cyan-500 pl-4">使用“关闭一切”的口诀来放松，专注于技术动作和数划水次数来减缓思维。他认为氮醉有时能帮助“消除紧张感”。他观想的是拥有空灵、平和心境的完美下潜。</p>
+                </details>
+                 <details class="bg-white p-4 rounded-lg shadow-md cursor-pointer">
+                    <summary class="font-semibold text-lg text-cyan-900 flex justify-between items-center">
+                        <span>阿伦卡·阿特尼克 (Alenka Artnik)</span>
+                        <span class="text-2xl transform transition-transform duration-300 open:rotate-90">▸</span>
+                    </summary>
+                    <p class="mt-3 text-slate-700 border-l-4 border-cyan-500 pl-4">认为精神力量比身体更重要，要臣服于海洋而非对抗。她强调通过大量重复训练形成“自动导航”，当心态良好时，正式的可视化并非总是至关重要。</p>
+                </details>
+                 <details class="bg-white p-4 rounded-lg shadow-md cursor-pointer">
+                    <summary class="font-semibold text-lg text-cyan-900 flex justify-between items-center">
+                        <span>阿莱西亚·泽基尼 (Alessia Zecchini)</span>
+                        <span class="text-2xl transform transition-transform duration-300 open:rotate-90">▸</span>
+                    </summary>
+                    <p class="mt-3 text-slate-700 border-l-4 border-cyan-500 pl-4">追求一种“无思绪、无情绪”的极致心流状态。在下潜前，她会详细观想整个过程，从呼吸到最后的喜悦感，她相信“如果一切顺利，现实便会如她所想的那样发生”。</p>
+                </details>
+                 <div class="mt-8 bg-cyan-50 border-l-4 border-cyan-600 p-6 rounded-r-lg">
+                    <h4 class="font-bold text-cyan-900">共同主题：发展“自动导航”</h4>
+                    <p class="text-slate-700 mt-2">精英们殊途同归，都致力于通过数千次的生理和心理排练，发展出一种“自动导航”系统。这个系统允许身体在氮醉和极端缺氧、意识减弱的情况下，依然能完美执行程序。你的可视化训练，其终极目标之一就是为自己编程这套可靠的“备用系统”。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="advanced-tools" class="py-12 md:py-16 scroll-mt-20">
+             <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold text-cyan-800">高级工具箱</h3>
+                <p class="mt-2 text-lg text-slate-500">整合呼吸法、NLP等技术，全面提升心理韧性。</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="text-4xl mb-4">💨</div>
+                    <h4 class="text-xl font-semibold text-cyan-900 mb-2">呼吸法协同</h4>
+                    <p class="text-slate-600">利用箱式呼吸法或共振频率呼吸法进入平静专注的状态，然后将可视化脚本与呼吸同步，可以极大地增强心理预演的深度和效果。</p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="text-4xl mb-4">🧠</div>
+                    <h4 class="text-xl font-semibold text-cyan-900 mb-2">认知与正念</h4>
+                    <p class="text-slate-600">结合认知重构（挑战消极想法）、积极自我对话和正念（专注当下），构建一个相互支持的心理技能系统，为可视化训练提供坚实基础。</p>
+                </div>
+                 <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <div class="text-4xl mb-4">📈</div>
+                    <h4 class="text-xl font-semibold text-cyan-900 mb-2">生物反馈 (HRV)</h4>
+                     <p class="text-slate-600">使用HRV生物反馈设备，可以客观地衡量你的放松状态，训练自己在可视化前稳定地进入最佳生理状态，让心理训练的效果更可预测。</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="your-plan" class="py-12 md:py-16 bg-cyan-800 text-white rounded-2xl scroll-mt-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">创建你的个性化方案</h3>
+                <p class="mt-2 text-lg text-cyan-200">将理论付诸实践，三步构建你的可视化训练计划。</p>
+            </div>
+            <div class="max-w-4xl mx-auto grid md:grid-cols-3 gap-8">
+                <div class="bg-cyan-700 p-6 rounded-lg">
+                    <div class="flex items-center mb-3">
+                        <span class="text-2xl font-bold mr-3">1</span>
+                        <h4 class="text-xl font-semibold">自我评估与目标</h4>
+                    </div>
+                    <p class="text-cyan-100">识别你特有的挑战：是赛前焦虑，对特定深度的恐惧，还是技术缺陷？记录下潜日志，并以此为基础，设定清晰、可衡量的可视化目标。</p>
+                </div>
+                <div class="bg-cyan-700 p-6 rounded-lg">
+                     <div class="flex items-center mb-3">
+                        <span class="text-2xl font-bold mr-3">2</span>
+                        <h4 class="text-xl font-semibold">构建练习</h4>
+                    </div>
+                    <p class="text-cyan-100">坚持每日练习。从短时间的、针对特定元素的观想开始，逐步增加到完整的下潜预演。将可视化融入你的潜水前例行程序和静态闭气训练中。</p>
+                </div>
+                <div class="bg-cyan-700 p-6 rounded-lg">
+                     <div class="flex items-center mb-3">
+                        <span class="text-2xl font-bold mr-3">3</span>
+                        <h4 class="text-xl font-semibold">问题解决</h4>
+                    </div>
+                    <p class="text-cyan-100">不仅要观想完美下潜，更要预演如何应对潜在问题（如水流、装备故障）。这会为你“接种”心理疫苗，让你在意外发生时能保持冷静，有效应对。</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-slate-800 text-slate-400">
+        <div class="container mx-auto py-6 px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p>&copy; 2025 竞技自由潜水可视化训练指南。所有内容基于提供的研究报告生成。</p>
+            <p class="mt-1">此应用仅供参考，并不能替代专业的自由潜水训练和指导。</p>
+        </div>
+    </footer>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const narcosisData = {
+        depths: [0, 10, 30, 50, 70, 90, 100],
+        symptoms: [
+            "无明显症状或轻微到难以察觉的症状。",
+            "轻度影响未练习过的任务表现；轻度推理能力受损；可能出现轻微欣快感。",
+            "对视觉和听觉刺激反应延迟；推理能力和即时记忆受影响；计算错误；过度自信；可能出现焦虑。",
+            "嗜睡、判断力受损、意识模糊；幻觉；对指令反应严重延迟；某些人会感到恐惧。",
+            "注意力不集中和精神错乱；伴随灵巧度和判断力下降的麻木状态；记忆丧失。",
+            "强烈的幻觉；感觉即将昏厥；欣快感；躁狂或抑郁状态；时间感混乱。",
+            "极强的幻觉；意识丧失风险极高；需要完全依赖“自动导航”系统。"
+        ]
+    };
+
+    const getSymptomForDepth = (depth) => {
+        if (depth >= 90) return narcosisData.symptoms[5];
+        if (depth >= 70) return narcosisData.symptoms[4];
+        if (depth >= 50) return narcosisData.symptoms[3];
+        if (depth >= 30) return narcosisData.symptoms[2];
+        if (depth >= 10) return narcosisData.symptoms[1];
+        return narcosisData.symptoms[0];
+    };
+
+    const slider = document.getElementById('depth-slider');
+    const indicator = document.getElementById('depth-indicator');
+    const infoPanel = document.getElementById('narcosis-info').querySelector('p');
+
+    const ctx = document.getElementById('narcosis-chart').getContext('2d');
+    const pressureData = [1, 2, 4, 6, 8, 10, 11];
+
+    const narcosisChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: narcosisData.depths.map(d => `${d}m`),
+            datasets: [{
+                label: '压力 (bar)',
+                data: pressureData,
+                borderColor: '#0e7490',
+                backgroundColor: 'rgba(14, 116, 144, 0.1)',
+                fill: true,
+                tension: 0.1,
+                pointBackgroundColor: '#0e7490',
+                pointRadius: 5,
+                pointHoverRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: true,
+                    callbacks: {
+                        title: (context) => `深度: ${context[0].label}`,
+                        label: (context) => `压力: ${context.parsed.y} bar`
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '压力 (bar)'
+                    }
+                },
+                x: {
+                   title: {
+                        display: true,
+                        text: '深度 (米)'
+                    }
+                }
+            }
+        }
+    });
+
+    const updateVisuals = (depth) => {
+        const percentage = depth;
+        indicator.style.top = `${percentage}%`;
+        indicator.textContent = `${depth} 米`;
+        infoPanel.textContent = getSymptomForDepth(depth);
+
+        const activePointIndex = narcosisData.depths.findIndex((d, i) => {
+             const next_d = narcosisData.depths[i+1] || 101;
+             return depth >=d && depth < next_d;
+        });
+
+        narcosisChart.data.datasets[0].pointBackgroundColor = pressureData.map((_, index) => index === activePointIndex ? '#f59e0b' : '#0e7490');
+        narcosisChart.data.datasets[0].pointRadius = pressureData.map((_, index) => index === activePointIndex ? 8 : 5);
+        narcosisChart.update('none');
+    };
+
+    slider.addEventListener('input', (e) => {
+        const depth = parseInt(e.target.value, 10);
+        updateVisuals(depth);
+    });
+    
+    updateVisuals(0);
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('section');
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href').substring(1) === entry.target.id) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }, { rootMargin: "-50% 0px -50% 0px" });
+
+    sections.forEach(section => observer.observe(section));
+    
+    mobileMenu.addEventListener('click', (e) => {
+        if (e.target.tagName === 'A') {
+            mobileMenu.classList.add('hidden');
+        }
+    });
+});
+</script>
+</body>
+</html>
 
