@@ -21,32 +21,19 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
     <script>
-        // Define the 'a' function from the provided code
-        function a(x, y, d = mag(k = 9 * cos(x / 8), e = y / 8 - 12.5)) {
-            return {
-                x: (q = 99 - e * sin(atan2(k, e) * 7) / d + k * (3 + cos(d * d - t) * 2)) * sin(c = d / 2 + e / 69 - t / 16) + 200,
-                y: (q + 19 * d) * cos(c) + 200
-            };
-        }
-
         let t = 0;
-
-        function setup() {
-            createCanvas(400, 400);
-            background(9);
-            stroke(400, 66); // Assuming 'w' in stroke(w, 66) refers to the canvas width or a white color
-        }
-
-        function draw() {
-            background(9); // Clear canvas each frame with dark background
-            t += PI / 45; // Increment t
-            for (let i = 1e4; i--;) {
-                let x = i % 200;
-                let y = i / 55;
-                let pos = a(x, y);
-                point(pos.x, pos.y); // Plot the point
-            }
-        }
+draw = () => {
+  createCanvas(400, 400), noFill(), background(10, 20), stroke(255, 120), translate(width/2, height/2);
+  for (let i = 0; i < 500; i++) {
+    let a = i * 0.1 + t;
+    let r = 150 * sin(a * 0.5 + sin(t * 0.1) * 2);
+    let x = r * cos(a + sin(t * 0.05 + i * 0.01));
+    let y = r * sin(a + cos(t * 0.03 + i * 0.02));
+    let s = 1 + sin(t + i * 0.005);
+    ellipse(x, y, s * 2);
+  }
+  t += 0.02;
+};
     </script>
 </body>
 </html>
