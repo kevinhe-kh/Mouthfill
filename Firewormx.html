@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p5.js Heart Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #000; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script>
+        let t = 0;
+        let w = 400;
+
+        function a(x, y, o = 2 - mag(k = x / 8 - 12, e = y / 8 - 12) / 3, d = -5 * abs(sin(k / 2) * cos(e * 0.8))) {
+            return {
+                x: (x - d * k * 4 + d * k * sin(d + t)) * 0.7 + k * o * 2 + 130,
+                y: (y - d * y / 5 + d * e * cos(d + t + o) * sin(t + d)) * 0.7 + e * o + 70
+            };
+        }
+
+        function setup() {
+            createCanvas(w, w);
+            background(6, 96); // Dark background with some gray
+            stroke(w, 46);    // White stroke with some transparency
+        }
+
+        function draw() {
+            t += PI / 90;
+            for (let i = 0; i < 40000; i++) {
+                let point = a(i % 200, Math.floor(i / 200));
+                point(point.x, point.y);
+            }
+        }
+    </script>
+</body>
+</html>
