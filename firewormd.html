@@ -33,7 +33,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Processing转p5 by claude 4</h1>
+        <h1>Processing转p5 by 豆包</h1>
         <div id="sketch-container"></div>
     </div>
 
@@ -42,8 +42,8 @@
     let w = 400;
 
     function setup() {
-      createCanvas(w, w);
-      colorMode(RGB, 255); // 明确颜色模式
+        let canvas = createCanvas(w, w);
+        canvas.parent('sketch-container');
     }
 
     function draw() {
