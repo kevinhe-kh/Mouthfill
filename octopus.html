@@ -3,23 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jellyfish Animation</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <title>Processing Visualization</title>
     <style>
         body {
             margin: 0;
-            overflow: hidden;
-            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
         }
         canvas {
-            display: block;
+            border: 1px solid #fff;
         }
     </style>
 </head>
 <body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
     <script>
-   a=(x,y,d=mag(k=9*cos(x/8),e=y/8-12.5)**2/99+sin(t)/6+.5)=>point((q=99-e*sin(atan2(k,e)*7)/d+k*(3+cos(d*d-t)*2))*sin(c=d/2+e/69-t/16)+200,(q+19*d)*cos(c)+200)t=0,draw=$=>{t||createCanvas(w=400,w);background(9).stroke(w,66);for(t+=PI/45,i=1e4;i--;)a(i%200,i/55)}
+        // Define the 'a' function from the provided code
+        function a(x, y, d = mag(k = 9 * cos(x / 8), e = y / 8 - 12.5)) {
+            return {
+                x: (q = 99 - e * sin(atan2(k, e) * 7) / d + k * (3 + cos(d * d - t) * 2)) * sin(c = d / 2 + e / 69 - t / 16) + 200,
+                y: (q + 19 * d) * cos(c) + 200
+            };
+        }
 
+        let t = 0;
+
+        function setup() {
+            createCanvas(400, 400);
+            background(9);
+            stroke(400, 66); // Assuming 'w' in stroke(w, 66) refers to the canvas width or a white color
+        }
+
+        function draw() {
+            background(9); // Clear canvas each frame with dark background
+            t += PI / 45; // Increment t
+            for (let i = 1e4; i--;) {
+                let x = i % 200;
+                let y = i / 55;
+                let pos = a(x, y);
+                point(pos.x, pos.y); // Plot the point
+            }
+        }
     </script>
 </body>
 </html>
