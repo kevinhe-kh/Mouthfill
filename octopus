@@ -1,1 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jellyfish Animation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let t = 0;
 
+        function setup() {
+            createCanvas(400, 400);
+            background(0);
+            stroke(255, 66);
+            noFill();
+        }
+
+        function draw() {
+            background(0, 10); // Slightly transparent background to create a trail effect
+            translate(width / 2, height / 2); // Center the drawing
+
+            for (let i = 0; i < 1000; i++) {
+                let x = i % 200;
+                let y = i / 55;
+                let d = Math.pow(Math.sqrt(Math.pow(9 * Math.cos(x / 8), 2) + Math.pow(y / 8 - 12.5, 2)) / 99 + Math.sin(t) / 6 + 0.5, 2);
+                let q = 99 - Math.sin(Math.atan2(9 * Math.cos(x / 8), y / 8 - 12.5) * 7) / d + 9 * Math.cos(x / 8) * (3 + Math.cos(d * d - t) * 2);
+                let c = d / 2 + (y / 8 - 12.5) / 69 - t / 16;
+
+                let px = (q * Math.sin(c) + 200) * 0.5;
+                let py = (q + 19 * d) * Math.cos(c) + 200;
+
+                point(px, py);
+            }
+
+            t += Math.PI / 45;
+        }
+    </script>
+</body>
+</html>
