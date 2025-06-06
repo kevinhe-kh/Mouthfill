@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 网页标题 -->
+  <title>P5 Cosmic Vortex</title>
+  
+  <!-- 引入 p5.js 库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+  
+  <style>
+    /* CSS 用于将 p5.js 画布在页面中居中显示 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #000; /* 使用纯黑背景突出星云效果 */
+      overflow: hidden; /* 防止出现滚动条 */
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <script>
+    // 全局变量
+    let t = 0;   // 时间变量，驱动动画，原代码中的 't'
+    let w = 400; // 画布宽度，原代码中的 'w'
+
+    /**
+     * 这是原代码中核心的坐标变换函数 'a' 的可读版本。
+     * 它接收一个原始坐标 (x, y)，通过一系列复杂的数学运算，
+     * 返回一个新的、被扭曲和旋转后的坐标。
+     * @param {number} x - 原始点的 x 坐标
+     * @param {number} y - 原始点的 y 坐标
+     * @returns {Array<number>} - [newX, newY] 变换后的新坐标
+     */
+    function calculateVortexPosition(x, y) {
+      // 1. 将坐标相对于中心点 (200, 200) 进行缩放
+      // 原代码: k=x/8-25, e=y/8-25
+      const scaledX = x / 8 - 25;
+      const scaledY = y / 8 - 25;
+
+      // 2. 计算点到中心的距离，并进行变换，得到一个影响因子
+      // 这个因子 'd' 对于后续的旋转和扭曲至关重要
+      // 原代码: d=mag(k,e)**2/99
+      const dist = Math.hypot(scaledX, scaledY); // hypot(a,b) 就是 sqrt(a*a + b*b)
+      const distFactor = (dist * dist) / 99;
+
+      // 3. 计算旋转角度，它受距离和时间的影响
+      // 原代码: c=d/2-t/8
+      const angle = distFactor / 2 - t / 8;
+
+      // 4. 计算一个复杂的半径扰动因子 'q'，它给漩涡带来了波浪状的细节
+      // 原代码: q=x/3+k*.5/cos(y*5)*sin(d*d-t)
+      const radiusFactor = x / 3 + scaledX * 0.5 / cos(y * 5) * sin(distFactor * distFactor - t);
+
+      // 5. 应用旋转和扭曲，计算最终坐标
+      // 使用极坐标变换思想 (r*sin(angle), r*cos(angle))，并加入各种扰动项
+      // 最后 +200 是为了将中心点移回画布中央 (400/2)
+      const newX = radiusFactor * sin(angle) + scaledY * sin(distFactor + scaledX - t) + w / 2;
+      const newY = (radiusFactor + y / 8 + distFactor * 9) * cos(angle) + w / 2;
+      
+      // 返回新坐标和用于着色的距离因子
+      return [newX, newY, distFactor];
+    }
+
+    // p5.js 初始化函数，只运行一次
+    function setup() {
+      createCanvas(w, w);
+      // *** 新增：使用 HSB 颜色模式 ***
+      // 这使得通过改变色相 (Hue) 来创建平滑的彩虹色过渡变得非常容易
+      // 参数: (模式, 色相最大值, 饱和度最大值, 亮度最大值, 透明度最大值)
+      colorMode(HSB, 360, 100, 100, 100);
+    }
+
+    // p5.js 绘图函数，每帧重复执行
+    function draw() {
+      // 设置一个半透明的黑色背景，可以制造出运动模糊和拖影，增强动态感
+      background(0, 20); 
+      
+      // 更新时间变量，使动画动起来
+      t += PI / 60;
+
+      // 双重 for 循环，遍历一个 200x200 的网格区域 (从 99 到 299)
+      // 这些是 "源" 像素点，我们将对它们进行变换
+      for (let y = 99; y < 300; y += 5) { // y方向步进为5，减少计算量，形成线条感
+        for (let x = 99; x < 300; x += 1) { // x方向步进为1，保证线条连续
+          
+          // 调用函数计算每个点的新位置
+          const [newX, newY, distFactor] = calculateVortexPosition(x, y);
+
+          // *** 新增：根据距离和时间计算动态颜色 ***
+          // 1. 色相(Hue)会随着时间(t*50)流动，同时也会根据点离中心的距离(distFactor*5)变化
+          //    这会创造出从中心向外扩散的彩色光环，并且光环本身也在变换颜色
+          const hue = (t * 50 + distFactor * 5) % 360;
+          
+          // 2. 饱和度和亮度保持较高值，让颜色鲜艳
+          const saturation = 90;
+          const brightness = 100;
+
+          // 3. 透明度，原代码为96/255，约等于37.6%。我们用40%
+          const alpha = 40;
+
+          // 设置点的颜色
+          stroke(hue, saturation, brightness, alpha);
+          
+          // 在计算出的新位置绘制一个点
+          point(newX, newY);
+        }
+      }
+    }
+  </script>
+</body>
+</html>
