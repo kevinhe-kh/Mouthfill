@@ -14,7 +14,7 @@
             background-color: #000;
         }
         canvas {
-            border: 1px solid #fff;
+            border: 0px solid #fff;
         }
     </style>
 </head>
@@ -25,26 +25,27 @@
 
         function setup() {
             createCanvas(400, 400);
-            background(0);
-            stroke(255, 66);
-            noFill();
+            background(6,96);
+            stroke(400, 46);
+            //noFill();
         }
 
+
+//a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
+//t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}
+        
         function draw() {
-            background(0);
-            translate(width / 2, height / 2);
+            //background(0);
+            //translate(width / 2, height / 2);
 
             for (let i = 0; i < 10000; i++) {
                 let x = i % 200;
-                let y = i / 55;
-                let d = mag(k = 9 * cos(x / 8), e = y / 8 - 12.5);
-                d = d * d / 99 + sin(t) / 6 + 0.5;
+                let y = i / 200
+                let o = 2-mag(k = x/8-12, e = y / 8 - 12)/3;
+                let d=-5*abs(sin(k/2)*cos(e*.8));
                 
-                let q = 99 - e * sin(atan2(k, e) * 7) / d + k * (3 + cos(d * d - t) * 2);
-                let c = d / 2 + e / 69 - t / 16;
-                
-                let px = q * sin(c) + 200;
-                let py = (q + 19 * d) * cos(c) + 200;
+                let px = (x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130;
+                let py = (y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70;
                 
                 point(px, py);
             }
