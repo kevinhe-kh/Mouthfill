@@ -24,34 +24,9 @@
     let t = 0;
 draw = () => {
   createCanvas(400, 400), noFill(), background(6, 96), stroke(400,46);
-    for (let i = 40000; i--;){
-
-
-
-        
-    }
-    
-    
-    
-    
-    let a = i * 0.1 + t;
-    let r = 150 * sin(a * 0.5 + sin(t * 0.1) * 2);
-    let x = r * cos(a + sin(t * 0.05 + i * 0.01));
-    let y = km
-};
-
-
-//a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
-//t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}
-        
-        function draw() {
-            //background(0);
-            //translate(width / 2, height / 2);
-            createCanvas(w=400, w) ,background(6,96) ,stroke(400, 46);
-            
-            for (let i = 40000; i--;) {
+    for (let i = 40000; i=0;i--;){
                 let x = i % 200;
-                let y = i / 200
+                let y = i / 200;
                 let o = 2-mag(k = x/8-12, e = y / 8 - 12)/3;
                 let d = -5*abs(sin(k/2)*cos(e*.8)));
                 
@@ -62,7 +37,13 @@ draw = () => {
             }
 
             t += PI / 90;
-        };
+
+
+//a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
+//t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}
+        
+        
+        }
     </script>
 </body>
 </html>
