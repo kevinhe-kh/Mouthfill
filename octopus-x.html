@@ -1,1 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>p5.js Animated Pattern</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
+</head>
+<body>
+  <script>
+    let t = 0;
 
+    function setup() {
+      createCanvas(400, 400);
+    }
+
+    function draw() {
+      background(9); // Dark background
+      stroke(255, 66); // White stroke with alpha 66
+
+      for (let i = 0; i < 10000; i++) {
+        let x = i % 200;
+        let y = i / 55;
+        let k = 9 * cos(x / 8);
+        let e = y / 8 - 12.5;
+        let d = (k * k + e * e) / 99 + sin(t) / 6 + 0.5;
+        let c = d / 2 + e / 69
