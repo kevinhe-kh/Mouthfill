@@ -12,29 +12,27 @@
 </head>
 <body>
     <script>
-        let t = 0;
-        let w = 400;
+    let t = 0;
 
-        function a(x, y, o = 2 - mag(k = x / 8 - 12, e = y / 8 - 12) / 3, d = -5 * abs(sin(k / 2) * cos(e * 0.8))) {
-            return {
-                x: (x - d * k * 4 + d * k * sin(d + t)) * 0.7 + k * o * 2 + 130,
-                y: (y - d * y / 5 + d * e * cos(d + t + o) * sin(t + d)) * 0.7 + e * o + 70
-            };
-        }
+function setup() {
+  createCanvas(400, 400);
+}
 
-        function setup() {
-            createCanvas(w, w);
-            background(6, 96); // Dark background with some gray
-            stroke(w, 46);    // White stroke with some transparency
-        }
+function draw() {
+  background(6, 96);
+  stroke(255, 46);
+  for (let i = 40000; i--; ) {
+    a(i % 200, i / 200);
+  }
+  t += PI / 90;
+}
 
-        function draw() {
-            t += PI / 90;
-            for (let i = 0; i < 40000; i++) {
-                let point = a(i % 200, Math.floor(i / 200));
-                point(point.x, point.y);
-            }
-        }
+function a(x, y, o = (2 - mag(x / 8 - 12, y / 8 - 12) / 3), d = -5 * abs(sin((x / 8 - 12) / 2) * cos((y / 8 - 12) * 0.8))) {
+  point(
+    (x - d * (x / 8 - 12) * 4 + d * (x / 8 - 12) * sin(d + t)) * 0.7 + (x / 8 - 12) * o * 2 + 130,
+    (y - d * (y / 8 - 12) / 5 + d * (y / 8 - 12) * cos(d + t + o) * sin(t + d)) * 0.7 + (y / 8 - 12) * o + 70
+  );
+}
     </script>
 </body>
 </html>
