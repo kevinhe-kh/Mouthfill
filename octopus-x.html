@@ -3,25 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>p5.js Animated Pattern</title>
+  <title>p5.js Pattern Animation</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.4/p5.min.js"></script>
 </head>
 <body>
   <script>
     let t = 0;
 
+    // Original compact code, expanded for clarity
+    let a = (x, y, d = mag(k = 9 * cos(x / 8), e = y / 8 - 12.5) ** 2 / 99 + sin(t) / 6 + 0.5) => {
+      let q = 99 - e * sin(atan2(k, e) * 7) / d + k * (3 + cos(d * d - t) * 2);
+      let c = d / 2 + e / 69 - t / 16;
+      point(q * sin(c) + 200, (q + 19 * d) * cos(c) + 200);
+    };
+
     function setup() {
-      createCanvas(400, 400);
+      createCanvas(400, 400); // Create a 400x400 canvas
     }
 
     function draw() {
-      background(9); // Dark background
-      stroke(255, 66); // White stroke with alpha 66
-
-      for (let i = 0; i < 10000; i++) {
-        let x = i % 200;
-        let y = i / 55;
-        let k = 9 * cos(x / 8);
-        let e = y / 8 - 12.5;
-        let d = (k * k + e * e) / 99 + sin(t) / 6 + 0.5;
-        let c = d / 2 + e / 69
+      background(9); // Dark background (nearly black)
+      stroke(255, 66); // White points with 66/255 opacity
+      t += PI / 45; // Increment time by π/45 per frame
+      for (let i = 10000; i--; ) { // Loop 10,000 times
+        a(i % 200, i / 55); // Call function a with x = i % 200, y = i / 55
+      }
+    }
+  </script>
+</body>
+</html>
