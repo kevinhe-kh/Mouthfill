@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- 网页标题 -->
+  <title>P5 Gemini Jelly Fish</title>
+  
+  <!-- 引入 p5.js 库 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.js"></script>
+  
+  <style>
+    /* CSS 用于将 p5.js 画布在页面中居中显示 */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      /* 设置一个深色背景，让水母效果更突出 */
+      background-color: #0d1117; 
+      overflow: hidden; /* 防止出现滚动条 */
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- p5.js 的脚本将在这里执行 -->
+  <script>
+    // 全局变量，用于在 setup 和 draw 函数之间共享
+    let f = 0; // 时间/动画帧计数器，原代码中的 'f'
+    let W = 400; // 画布宽度，原代码中的 'W'
+    let d = W / 2; // 画布中心点 X 坐标，原代码中的 'd'
+    
+    // p5.js 初始化函数，仅在程序开始时运行一次
+    function setup() {
+      // 创建一个 400x400 像素的画布
+      createCanvas(W, W); 
+    }
+
+    // p5.js 绘图函数，每帧重复执行
+    function draw() {
+      // 设置深黑色背景，透明度为 50，制造拖影效果
+      background(0, 50);
+
+      // 定义水母身体的Y坐标，使用 cos 函数使其上下浮动
+      let Y = 150 + 9 * cos(9 * f);
+
+      // 关闭描边，准备绘制水母的伞状身体
+      noStroke();
+      
+      // 第一个 for 循环：绘制水母的伞状身体和触手
+      // a 代表角度，从 -PI 到 PI 循环，将水母分为 32 个部分进行绘制
+      for (let a = -PI; a < PI; a += PI / 16) {
+        
+        // --- 绘制水母的伞状身体部分 (半透明的贝塞尔曲线) ---
+        // 设置填充色为白色，但透明度极低，层层叠加形成柔和效果
+        fill(255, 3);
+        // 使用贝塞尔曲线绘制伞体的一个切片
+        // 曲线的控制点随时间和角度变化，模拟水母的收缩和舒张
+        bezier(
+          d, Y,                                // 起点 (伞顶中心)
+          d - 9 * a, 150,                      // 控制点1
+          d - a * (9 * sin(9 * f) + 9), d,     // 控制点2
+          d, Y                                 // 终点 (回到伞顶中心)
+        );
+        
+        // --- 绘制水母的触手部分 (发光的粒子点) ---
+        // 第二个 for 循环：从水母身体向外绘制每个触手上的粒子
+        // i 从 1 减到 0，代表粒子在触手上的位置（1靠近身体，0在末端）
+        for (let i = 1; i > 0; i -= 0.01) {
+          // 设置粒子点的颜色和透明度
+          // 越靠近身体 (i 越大)，透明度越低 (d - i*d 越小)
+          // 越靠近末端 (i 越小)，透明度越高 (d - i*d 越大)
+          stroke(255, d - i * d);
+          
+          // 使用 Perlin 噪声计算粒子的 x, y 坐标，使其随机、自然地摆动
+          // 噪声的输入包含时间(f), 角度(a), 和在触手上的位置(i)
+          let pointX = (noise(i - f, f / 3, a) - PI / 8) * i * W + d;
+          let pointY = noise(f / 2, i - f, a) * i * W + Y + 9;
+          
+          // 在计算出的位置绘制一个点
+          point(pointX, pointY);
+        }
+      }
+      
+      // 更新时间变量，驱动动画
+      f += 0.003; 
+    }
+  </script>
+</body>
+</html>
