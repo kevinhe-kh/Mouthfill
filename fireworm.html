@@ -21,7 +21,24 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
     <script>
-        let t = 0;
+    let t = 0;
+draw = () => {
+  createCanvas(400, 400), noFill(), background(6, 96), stroke(400,46);
+    for (let i = 40000; i--;){
+
+
+
+        
+    }
+    
+    
+    
+    
+    let a = i * 0.1 + t;
+    let r = 150 * sin(a * 0.5 + sin(t * 0.1) * 2);
+    let x = r * cos(a + sin(t * 0.05 + i * 0.01));
+    let y = km
+};
 
 
 //a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
