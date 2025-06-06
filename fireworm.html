@@ -37,12 +37,15 @@
         function draw() {
             //background(0);
             //translate(width / 2, height / 2);
-
+            createCanvas(400, 400);
+            background(6,96);
+            stroke(400, 46);
+            
             for (let i = 40000; i--;) {
                 let x = i % 200;
                 let y = i / 200
                 let o = 2-mag(k = x/8-12, e = y / 8 - 12)/3;
-                let d=-5*abs(sin(k/2)*cos(e*.8));
+                let d = -5*abs(sin(k/2)*cos(e*.8)));
                 
                 let px = (x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130;
                 let py = (y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70;
