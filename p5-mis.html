@@ -1,0 +1,64 @@
+from IPython.display import HTML
+import math
+
+# HTML and JavaScript code for p5.js sketch
+p5_js_code = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>p5.js Sketch</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        let t = 0;
+        function setup() {
+            createCanvas(400, 400);
+        }
+
+        function draw() {
+            background(6, 96);
+            stroke(255, 46);
+
+            for (let i = 0; i < 40000; i++) {
+                let x = i % 200;
+                let y = Math.floor(i / 200);
+
+                let k = x / 8 - 12.5;
+                let e = y / 8 - 12.5;
+                let o = Math.sqrt(k * k + e * e) / 12;
+                let s = Math.sin(k / 2) * Math.cos(e / 2);
+                let d = 5 * Math.cos(o * Math.cos(s));
+
+                let pointX = ((x + d * k * (Math.sin(d * 2 + t) + Math.sin(y * o * o) / 9)) / 1.5 + 133);
+                let pointY = ((y / 3 - d * 40 + 19 * Math.cos(d + t)) * 1.5 + 300);
+
+                point(pointX, pointY);
+            }
+
+            t += Math.PI / 90;
+            noLoop();
+        }
+    </script>
+</body>
+</html>
+"""
+
+# Save the HTML code to a file
+file_path = "p5_sketch.html"
+with open(file_path, "w") as file:
+    file.write(p5_js_code)
+
+file_path
