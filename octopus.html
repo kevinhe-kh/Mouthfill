@@ -1,1 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jellyfish Animation</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000;
+        }
+        canvas {
+            border: 1px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
+    <script>
+        let t = 0;
 
+        function setup() {
+            createCanvas(400, 400);
+            background(0);
+            stroke(255, 66);
+            noFill();
+        }
+
+        function draw() {
+            background(0);
+            translate(width / 2, height / 2);
+
+            for (let i = 0; i < 10000; i++) {
+                let x = i % 200;
+                let y = i / 55;
+                let d = mag(k = 9 * cos(x / 8), e = y / 8 - 12.5);
+                d = d * d / 99 + sin(t) / 6 + 0.5;
+                
+                let q = 99 - e * sin(atan2(k, e) * 7) / d + k * (3 + cos(d * d - t) * 2);
+                let c = d / 2 + e / 69 - t / 16;
+                
+                let px = q * sin(c) + 200;
+                let py = (q + 19 * d) * cos(c) + 200;
+                
+                point(px, py);
+            }
+
+            t += PI / 45;
+        }
+    </script>
+</body>
+</html>
