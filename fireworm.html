@@ -1,49 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fireworm Animation</title>
-    <style>
-        body {
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #000;
-        }
-        canvas {
-            border: 0px solid #fff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>p5.js 豆包</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
+  <style>
+    body { margin: 0; }
+    canvas { display: block; }
+  </style>
 </head>
 <body>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
-    <script>
+  <script>
     let t = 0;
-draw = () => {
-  createCanvas(400, 400), noFill(), background(6, 96), stroke(400,46);
-    for (let i = 40000; i=0;i--;){
-                let x = i % 200;
-                let y = i / 200;
-                let o = 2-mag(k = x/8-12, e = y / 8 - 12)/3;
-                let d = -5*abs(sin(k/2)*cos(e*.8)));
-                
-                let px = (x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130;
-                let py = (y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70;
-                
-                point(px, py);
-            }
+    let w = 400;
 
-            t += PI / 90;
+    function setup() {
+      createCanvas(w, w);
+      colorMode(RGB, 255); // 明确颜色模式
+    }
 
-
-//a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
-//t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}
-        
-        
+    function draw() {
+      background(6); // 深灰背景
+      stroke(255, 96); // 半透明白色线条
+      
+      t += Math.PI / 60; // 使用 Math 前缀
+      
+      for (let y = 99; y < 300; y += 5) {
+        for (let x = 99; x < 300; x++) { // 修正循环条件（++x 改为 x++）
+          const [px, py] = a(x, y);
+          point(px, py);
         }
-    </script>
+      }
+    }
+
+    function a(x, y) {
+      const kx = x / 8 - 25;
+      const ky = y / 8 - 25;
+      const d = (kx * kx + ky * ky) / 99; // 修正 mag 计算（原代码应为 sqrt(kx²+ky²)，但此处直接用平方和，按原逻辑保留）
+      
+      const q = x / 3 + (0.5 * kx) / (Math.cos(y * 5) * Math.sin(d * d - t)); // 补充 k 的正确计算（原代码 k=x/8-25,e=y/8-25，此处用 kx/ky 替代）
+      const c = d / 2 - t / 8;
+      
+      const px = (q * Math.sin(c) + ky * Math.sin(d + kx - t)) + 200; // 修正 e 为 ky（原代码 e=y/8-25）
+      const py = (q + y / 8 + d * 9) * Math.cos(c) + 200;
+      
+      return [px, py];
+    }
+  </script>
 </body>
 </html>
