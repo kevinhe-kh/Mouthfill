@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jellyfish Animation</title>
+    <title>Fireworm Animation</title>
     <style>
         body {
             margin: 0;
@@ -22,13 +22,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.2/p5.min.js"></script>
     <script>
         let t = 0;
-
-        function setup() {
-            createCanvas(400, 400);
-            background(6,96);
-            stroke(400, 46);
-            //noFill();
-        }
 
 
 //a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
