@@ -17,13 +17,15 @@
       point(q * sin(c) + 200, (q + 19 * d) * cos(c) + 200);
     };
 
-    function setup() {
-      createCanvas(400, 400); // Create a 400x400 canvas
-    }
+    //function setup() {
+   //   createCanvas(400, 400); // Create a 400x400 canvas
+   // }
 
     function draw() {
-      background(9); // Dark background (nearly black)
-      stroke(255, 66); // White points with 66/255 opacity
+      //background(9); // Dark background (nearly black)
+      //stroke(255, 66); // White points with 66/255 opacity
+      createCanvas(400, 400), noFill(), background(10, 20), stroke(255, 120), translate(width/2, height/2);
+      
       t += PI / 45; // Increment time by π/45 per frame
       for (let i = 10000; i--; ) { // Loop 10,000 times
         a(i % 200, i / 55); // Call function a with x = i % 200, y = i / 55
