@@ -18,14 +18,12 @@
     };
 
     function setup() {
-            createCanvas(400, 400);
-            background(0);
-            stroke(255, 66);
-            noFill();
-        }
+      createCanvas(400, 400); // Create a 400x400 canvas
+    }
 
     function draw() {
-    
+      background(9); // Dark background (nearly black)
+      stroke(255, 66); // White points with 66/255 opacity
       t += PI / 45; // Increment time by π/45 per frame
       for (let i = 10000; i--; ) { // Loop 10,000 times
         a(i % 200, i / 55); // Call function a with x = i % 200, y = i / 55
