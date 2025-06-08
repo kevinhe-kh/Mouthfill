@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>P5.js Creative Code Runner</title>
     
-    <!-- Include the p5.js library from a CDN -->
+    <!-- Include the p5.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
     <style>
@@ -56,7 +56,7 @@
             transition: background-color 0.2s, transform 0.1s;
         }
         button:hover {
-            background-color: #4CAF50;
+            background-color: #575757;
         }
         button.active {
             background-color: #4CAF50;
@@ -81,8 +81,7 @@
             padding: 5px;
             background-color: #282828;
             line-height: 0; /* Prevents extra space below canvas */
-            min-height: 410px; /* Reserve space for canvas */
-            min-width: 410px;
+            /* The canvas will be created inside here */
         }
     </style>
 </head>
@@ -104,61 +103,64 @@
         </div>
     </div>
 
-    <div id="canvas-container">
-        <!-- The p5.js canvas will be placed here -->
-    </div>
+    <div id="canvas-container"></div>
 
     <script>
+        // Restructured snippets for clarity and correctness
         const codeSnippets = [
-            {
-                code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=>
-                point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300)
-                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
+            { // Snippet 1
+                setup: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=>
+                        point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300);
+                        t=0`,
+                draw: `t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=__TIME_STEP__,i=4e4;i--;)a(i%200,i/200)`,
                 originalSpeed: "PI/90"
             },
-            {
-                code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130)
-                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
+            { // Snippet 2
+                setup: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130);
+                        t=0`,
+                draw: `t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=__TIME_STEP__,i=4e4;i--;)a(i%200,i/200)`,
                 originalSpeed: "PI/90"
             },
-            {
-                code: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
-                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
+            { // Snippet 3
+                setup: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70);
+                        t=0`,
+                draw: `t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=__TIME_STEP__,i=4e4;i--;)a(i%200,i/200)`,
                 originalSpeed: "PI/90"
             },
-            {
-                code: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215]
-                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=timeStep,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}`,
+            { // Snippet 4
+                setup: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215];
+                        t=0`,
+                draw: `t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=__TIME_STEP__,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))`,
                 originalSpeed: "PI/60"
             },
-            {
-                code: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e]
-                ,s=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=timeStep,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}`,
+            { // Snippet 5
+                setup: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e];
+                        s=3;t=0`,
+                draw: `t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=__TIME_STEP__,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())`,
                 originalSpeed: "0.02"
             },
-            {
-                code: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=timeStep)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`,
+            { // Snippet 6
+                setup: `t=0`,
+                draw: `t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=__TIME_STEP__)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))`,
                 originalSpeed: "(PI/30)/4"
             }
         ];
 
-        // Global state
         let currentSketch = null;
         let speedMultiplier = 1.0;
-        let activeSnippetIndex = 0;
+        let activeSnippetIndex = -1;
         
-        // DOM Elements
         const buttonContainer = document.getElementById('button-container');
         const speedSlider = document.getElementById('speed-slider');
         const speedValueLabel = document.getElementById('speed-value');
 
-        // Event listener for the slider
         speedSlider.addEventListener('input', (e) => {
             speedMultiplier = parseFloat(e.target.value);
             speedValueLabel.textContent = `${speedMultiplier.toFixed(1)}x`;
         });
         
         function runSketch(snippet, index) {
+            if (activeSnippetIndex === index) return; // Don't restart the same sketch
             activeSnippetIndex = index;
             updateActiveButton();
 
@@ -167,42 +169,26 @@
             }
 
             const sketch = (p) => {
-                // Declare variables in the sketch's scope
-                let setupCode, drawCode;
-
-                // **THIS IS THE KEY FIX:** We split the code into setup and draw parts.
-                const parts = snippet.code.split(',draw=$=>{');
-                setupCode = parts[0];
-                drawCode = parts[1] ? parts[1].slice(0, -1) : ''; // Remove trailing '}'
-
-                // Replace the original time increment with our dynamic one.
-                const timeIncrementPattern = /(t\s*\+=\s*)[^,;})]+/;
-                if(timeIncrementPattern.test(drawCode)) {
-                    drawCode = drawCode.replace(timeIncrementPattern, `$1timeStep`);
-                } else {
-                    // Handle snippet 6 which has a different structure
-                    const specialPattern = /(j=\(t\+=)timeStep(\)\/4\%s)/;
-                    if(specialPattern.test(drawCode)){
-                         drawCode = drawCode.replace(specialPattern, `t+=timeStep;j=t/4%s`);
-                    }
-                }
-
-                // p.setup runs ONCE
+                // p.setup runs ONCE when the sketch starts.
                 p.setup = () => {
+                    // `with(p)` makes all p5 functions (like `createCanvas`) and properties
+                    // available to the evaluated code. Crucially, variable assignments
+                    // like `t=0` will create `p.t`, making them part of the sketch instance.
                     with (p) {
-                        // Safely evaluate setup code (e.g., 'a=...', 't=0')
-                        eval(setupCode);
+                        eval(snippet.setup);
                     }
                 };
 
-                // p.draw runs in a loop
+                // p.draw runs in a loop (approx. 60 times per second).
                 p.draw = () => {
-                    const baseSpeed = p.eval(snippet.originalSpeed); 
-                    const timeStep = baseSpeed * speedMultiplier;
+                    // Calculate the dynamic speed for this frame.
+                    const __TIME_STEP__ = p.eval(snippet.originalSpeed) * speedMultiplier;
                     
+                    // The `with(p)` block is essential here too. It allows the draw code
+                    // to access variables that were created in setup (like `t` and `a`)
+                    // because they all live on the `p` object.
                     with (p) {
-                        // Execute ONLY the drawing code each frame
-                        eval(drawCode);
+                        eval(snippet.draw);
                     }
                 };
             };
@@ -217,7 +203,6 @@
             });
         }
 
-        // Create a button for each code snippet
         codeSnippets.forEach((snippet, index) => {
             const button = document.createElement('button');
             button.textContent = `Art ${index + 1}`;
@@ -225,7 +210,6 @@
             buttonContainer.appendChild(button);
         });
 
-        // Automatically run the first sketch on page load
         if (codeSnippets.length > 0) {
             runSketch(codeSnippets[0], 0);
         }
