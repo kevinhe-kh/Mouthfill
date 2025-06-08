@@ -25,26 +25,8 @@
         .control-wrapper input[type="checkbox"] { cursor: pointer; width: 18px; height: 18px; }
         #canvas-container { border: 2px solid #444; border-radius: 8px; padding: 5px; background-color: #282828; line-height: 0; margin-bottom: 20px;}
         
-        /* 新增：代码显示框的样式 */
-        #code-display-wrapper {
-            width: 100%;
-            max-width: 720px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        #code-display {
-            width: 95%;
-            height: 120px;
-            background-color: #2b2b2b;
-            color: #a9b7c6;
-            border: 1px solid #444;
-            border-radius: 5px;
-            padding: 10px;
-            font-family: 'Courier New', Courier, monospace;
-            font-size: 14px;
-            resize: vertical; /* 允许用户垂直调整大小 */
-        }
+        #code-display-wrapper { width: 100%; max-width: 720px; display: flex; flex-direction: column; align-items: center; }
+        #code-display { width: 95%; height: 120px; background-color: #2b2b2b; color: #a9b7c6; border: 1px solid #444; border-radius: 5px; padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 14px; resize: vertical; }
     </style>
 </head>
 <body>
@@ -74,7 +56,6 @@
 
     <div id="canvas-container"></div>
     
-    <!-- 新增：代码显示区域 -->
     <div id="code-display-wrapper">
         <p>原始代码:</p>
         <textarea id="code-display" readonly></textarea>
@@ -97,11 +78,8 @@
         const hueSliderWrapper = document.getElementById('hue-slider-wrapper');
         const hueSpeedSlider = document.getElementById('hue-speed-slider');
         const hueSpeedValueLabel = document.getElementById('hue-speed-value');
-        const codeDisplay = document.getElementById('code-display'); // 新增的代码显示框
+        const codeDisplay = document.getElementById('code-display');
 
-        // =================================================================
-        //            将原始代码和重构后的逻辑分开存储
-        // =================================================================
         const sketches = [
             {
                 name: "宇宙绽放",
@@ -166,7 +144,9 @@
                     p.randomSeed(0);
                     this.t += 0.02 * 5 * speedMultiplier;
                     const a = (x,y,t) => { let k=x/8-25, e=y/8-25; let d=2*p.cos(p.mag(k,e)/3-t); return [x+d*k,y+d*e]; };
-                    for(let y=100; y<300; y+=this.s) for(let x=100; x<300; x+=this.s) p.line(...p.shuffle([a(x,y,this.t),a(x,y+this.s,this.t),a(x+s,y,this.t)]).flat());
+                    // ******** 这是唯一的修复点 ********
+                    // 确保调用 p.shuffle() 而不是全局的 shuffle()
+                    for(let y=100; y<300; y+=this.s) for(let x=100; x<300; x+=this.s) p.line(...p.shuffle([a(x,y,this.t),a(x,y+this.s,this.t),a(x+this.s,y,this.t)]).flat());
                 }
             },
              {
@@ -180,7 +160,7 @@
                         for(let i=0; i<p.TAU; i+=s*2) {
                             if (isColorChangeActive) { p.colorMode(p.HSL, 360, 100, 100); p.stroke((p.frameCount * hueSpeedMultiplier + j*50) % 360, 90, 70); } 
                             else { p.colorMode(p.RGB); p.stroke(j*50); }
-                            const getCoords = ([u,v]) => { let e=v**3*4+0; return [e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+360, 360+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)]; };
+                            const getCoords = ([u,v]) => { let e=v**3*4+0; return [e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+360, 360+e/v*p.cos(v*3-t)-e*p.sin(u+j)]; };
                             p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));
                         }
                     }
@@ -204,7 +184,6 @@
             hueSliderWrapper.classList.toggle('hidden', !isColorChangeActive);
         });
         
-        // 新的、可靠的 Sketch 运行器
         function runSketch(sketchData, index) {
             if (currentSketch) {
                 currentSketch.remove();
@@ -212,10 +191,8 @@
             activeSnippetIndex = index;
             updateActiveButton();
             
-            // 更新代码显示框
             codeDisplay.value = sketchData.originalCode;
 
-            // 创建一个 p5 实例
             currentSketch = new p5((p) => {
                 p.sketchData = sketchData;
                 p.setup = () => { p.sketchData.setup(p); };
