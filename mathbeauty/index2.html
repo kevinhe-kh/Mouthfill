@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quantum Canvas: Formulaic Art Engine2</title>
+    <title>Quantum Canvas: Formulaic Art Engine</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
@@ -73,7 +73,7 @@
 <body>
 
     <header>
-        <h1>Quantum 2Canvas</h1>
+        <h1>Quantum Canvas</h1>
         <p>An interactive engine for formulaic and generative art.</p>
     </header>
 
@@ -217,7 +217,7 @@
                                 p.colorMode(p.RGB); 
                                 p.stroke(j*50); 
                             }
-                            const getCoords=([u,v])=>{let e=v**3*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-t)-e*p.sin(u+j)];};
+                            const getCoords=([u,v])=>{let e=v**3*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)];};
                             p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));
                         }
                     }
