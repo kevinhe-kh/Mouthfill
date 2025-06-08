@@ -124,11 +124,7 @@
         const hueSpeedValueLabel = document.getElementById('hue-speed-value');
         const codeDisplay = document.getElementById('code-display');
 
-        // =================================================================
-        //                 色彩方案函数 (背景色固定)
-        // =================================================================
         function applyRainbowColors(p, originalBg, originalStroke) {
-            // **修改点**: 无论如何，都先用原始颜色绘制背景
             p.background(...originalBg);
 
             if (isColorChangeActive) {
@@ -204,8 +200,13 @@
                 originalBg: [0], originalStroke: [255],
                 setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
                 draw: function(p) {
-                    p.background(0); // 这个动画背景固定为黑
-                    this.t+=(p.PI/30/4)*5*speedMultiplier; const s=p.PI/30;
+                    // 这个动画的背景和颜色逻辑特殊，直接内联处理
+                    p.background(0); 
+                    this.t+=(p.PI/30/4)*5*speedMultiplier; 
+                    
+                    // ******** 这是唯一的修复点 ********
+                    const s = p.PI / 30; // 重新定义 s
+                    
                     for(let j=this.t/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){
                         if(isColorChangeActive){ p.colorMode(p.HSL,360,100,100); const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2; const hue=p.map(p.sin(time),-1,1,0,360); const saturation=p.map(p.cos(time*0.5),-1,1,50,100); p.stroke(hue, saturation, 75); }
                         else{ p.colorMode(p.RGB); p.stroke(j*50); }
