@@ -107,7 +107,6 @@
     </div>
 
     <script>
-        // Array containing the original, working code snippets
         const codeSnippets = [
             `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=>
             point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300)
@@ -150,24 +149,22 @@
                 currentSketch.remove();
             }
 
-            // **THE KEY CHANGE IS HERE**
-            // We use string replacement to inject our speedMultiplier.
-            // This is simple and preserves the original code's logic.
+            // **THE CORRECT FIX IS HERE**
+            // Instead of injecting the VALUE of speedMultiplier, we inject the
+            // VARIABLE NAME "speedMultiplier" into the code string.
+            // This way, the live value is looked up on every frame.
             const modifiedCode = code
                 .replace('t+=PI/90', 't+=(PI/90)*speedMultiplier')
                 .replace('t+=PI/60', 't+=(PI/60)*speedMultiplier')
                 .replace('t+=.02', 't+=(.02)*speedMultiplier')
-                .replace('t+=s/4', 't+=(s/4)*speedMultiplier'); // for snippet #6
+                .replace('t+=s/4', 't+=(s/4)*speedMultiplier');
 
             const sketch = (p) => {
-                let draw, t, a, s, w; // Variables the user's code might use
+                let draw, t, a, s, w;
                 
                 p.draw = () => {
-                    // `with(p)` makes p5 functions available without the 'p.' prefix.
-                    // The `speedMultiplier` variable is available from the outer scope.
                     with (p) {
-                        // The modifiedCode string is evaluated every frame.
-                        // This is how the original version worked, and we are preserving it.
+                         // When eval runs modifiedCode, it finds the global `speedMultiplier` variable
                          eval(modifiedCode);
                          draw();
                     }
