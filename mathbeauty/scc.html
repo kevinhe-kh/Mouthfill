@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P5.js Creative Code Runner</title>
+    
+    <!-- 引入 p5.js 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #1a1a1a;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        h1 {
+            margin: 0;
+            color: #ffffff;
+        }
+        p {
+            color: #cccccc;
+        }
+        #controls-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            width: 100%;
+            max-width: 720px;
+        }
+        #button-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:hover {
+            background-color: #575757;
+        }
+        button.active {
+            background-color: #4CAF50;
+            border-color: #8cff90;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .control-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 80%;
+            justify-content: center;
+        }
+        .control-wrapper.hidden {
+            display: none;
+        }
+        .control-wrapper input[type="range"] {
+            flex-grow: 1;
+            max-width: 400px;
+            cursor: pointer;
+        }
+        .control-wrapper input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+        #canvas-container {
+            border: 2px solid #444;
+            border-radius: 8px;
+            padding: 5px;
+            background-color: #282828;
+            line-height: 0; /* 防止 canvas 下方出现多余空隙 */
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Creative Code Runner</h1>
+        <p>选择一个动画，并控制它的速度和颜色。</p>
+    </header>
+
+    <div id="controls-container">
+        <div class="control-wrapper">
+            <label for="speed-slider">动画速度:</label>
+            <input type="range" id="speed-slider" min="1" max="10" value="1" step="0.1">
+            <span id="speed-value">1.0x</span>
+        </div>
+        <div class="control-wrapper">
+            <label for="color-toggle">启用动态颜色:</label>
+            <input type="checkbox" id="color-toggle">
+        </div>
+        <!-- 新增的颜色速度滑轨 -->
+        <div class="control-wrapper hidden" id="hue-slider-wrapper">
+            <label for="hue-speed-slider">颜色速度:</label>
+            <input type="range" id="hue-speed-slider" min="0" max="10" value="2" step="0.1">
+            <span id="hue-speed-value">2.0</span>
+        </div>
+        <div id="button-container">
+            <!-- 按钮将由 JavaScript 在此生成 -->
+        </div>
+    </div>
+
+    <div id="canvas-container">
+        <!-- p5.js 画布将放在此处 -->
+    </div>
+
+    <script>
+        const codeSnippets = [
+            {
+                name: "宇宙绽放",
+                code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=>
+                point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300)
+                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`
+            },
+            {
+                name: "电光之海",
+                code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130)
+                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`
+            },
+            {
+                name: "混沌星爆",
+                code: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
+                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`
+            },
+            {
+                name: "丝绸星云",
+                code: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215]
+                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=PI/60,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}`
+            },
+            {
+                name: "水晶力场",
+                code: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e]
+                ,s=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=.02,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}`
+            },
+            {
+                name: "几何引擎",
+                code: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`
+            }
+        ];
+
+        // 全局状态变量
+        let currentSketch = null;
+        let speedMultiplier = 1.0;
+        let hueSpeedMultiplier = 2.0; // 新增：颜色速度变量
+        let isColorChangeActive = false;
+        let activeSnippetIndex = -1;
+        
+        // DOM 元素
+        const buttonContainer = document.getElementById('button-container');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValueLabel = document.getElementById('speed-value');
+        const colorToggle = document.getElementById('color-toggle');
+        const hueSliderWrapper = document.getElementById('hue-slider-wrapper');
+        const hueSpeedSlider = document.getElementById('hue-speed-slider');
+        const hueSpeedValueLabel = document.getElementById('hue-speed-value');
+
+        // 事件监听器
+        speedSlider.addEventListener('input', (e) => {
+            speedMultiplier = parseFloat(e.target.value);
+            speedValueLabel.textContent = `${speedMultiplier.toFixed(1)}x`;
+        });
+        
+        hueSpeedSlider.addEventListener('input', (e) => {
+            hueSpeedMultiplier = parseFloat(e.target.value);
+            hueSpeedValueLabel.textContent = hueSpeedMultiplier.toFixed(1);
+        });
+
+        colorToggle.addEventListener('change', (e) => {
+            isColorChangeActive = e.target.checked;
+            // 根据复选框状态，显示或隐藏颜色速度滑轨
+            if (isColorChangeActive) {
+                hueSliderWrapper.classList.remove('hidden');
+            } else {
+                hueSliderWrapper.classList.add('hidden');
+            }
+        });
+        
+        function runSketch(snippet, index) {
+            activeSnippetIndex = index;
+            updateActiveButton();
+
+            if (currentSketch) {
+                currentSketch.remove();
+            }
+
+            const modifiedCode = snippet.code
+                .replace('t+=PI/90', 't+=(PI/90)*speedMultiplier')
+                .replace('t+=PI/60', 't+=(PI/60)*speedMultiplier')
+                .replace('t+=.02', 't+=(.02)*speedMultiplier')
+                .replace('t+=s/4', 't+=(s/4)*speedMultiplier');
+
+            const sketch = (p) => {
+                let draw, t, a, s, w;
+                
+                p.draw = () => {
+                    with (p) {
+                         let animationCode = modifiedCode;
+                         if (isColorChangeActive) {
+                             // 如果勾选了颜色变化
+                             colorMode(HSL, 360, 100, 100);
+                             // 使用 frameCount 和新的颜色速度变量来计算当前色相
+                             let currentHue = (frameCount * hueSpeedMultiplier) % 360;
+                             stroke(currentHue, 90, 70);
+                             // 从原始代码中移除 stroke() 调用，以防它覆盖我们的颜色
+                             animationCode = animationCode.replace(/stroke\([^)]+\);?/g, '');
+                         } else {
+                             // 重置为默认的 RGB 模式
+                             colorMode(RGB, 255);
+                         }
+
+                         eval(animationCode);
+                         draw();
+                    }
+                };
+            };
+            
+            currentSketch = new p5(sketch, 'canvas-container');
+        }
+
+        function updateActiveButton() {
+            const buttons = buttonContainer.querySelectorAll('button');
+            buttons.forEach((button, i) => {
+                button.classList.toggle('active', i === activeSnippetIndex);
+            });
+        }
+
+        // 创建按钮
+        codeSnippets.forEach((snippet, index) => {
+            const button = document.createElement('button');
+            button.textContent = snippet.name;
+            button.addEventListener('click', () => runSketch(snippet, index));
+            buttonContainer.appendChild(button);
+        });
+
+        // 自动运行第一个动画
+        if (codeSnippets.length > 0) {
+            runSketch(codeSnippets[0], 0);
+        }
+    </script>
+</body>
+</html>
