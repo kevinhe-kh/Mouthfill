@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Beauty of Math</title>
+    <title>P5.js Creative Code Runner</title>
     
     <!-- 引入 p5.js 库 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
@@ -36,7 +36,7 @@
     <div id="controls-container">
         <div class="control-wrapper">
             <label for="speed-slider">速度乘数:</label>
-            <!-- 修改1：速度滑轨范围 0.2 - 2.5 -->
+            <!-- 1. 速度滑轨范围 0.2 - 2.5 -->
             <input type="range" id="speed-slider" min="0.2" max="2.5" value="1" step="0.1">
             <span id="speed-value">1.0x</span>
         </div>
@@ -56,6 +56,7 @@
 
     <script>
         const codeSnippets = [
+            // 2. 初始速度是原始速度的 5 倍
             { name: "宇宙绽放", code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=> point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
             { name: "电光之海", code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
             { name: "混沌星爆", code: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
@@ -106,47 +107,26 @@
 
             const sketch = (p) => {
                 let draw, t, a, s, w;
-                // **修改2：这是决定性修复**
-                // 1. 创建一个数组来捕获所有被绘制的点/线
-                let capturedGraphics = [];
-
-                // 2. 覆盖 p5 的绘图函数
-                p.point = (...args) => { capturedGraphics.push({ type: 'point', args: args }); };
-                p.line = (...args) => { capturedGraphics.push({ type: 'line', args: args }); };
-                p.quad = (...args) => { capturedGraphics.push({ type: 'quad', args: args }); };
                 
+                // **3. 最终的、最简单的修复方案**
                 p.draw = () => {
                     with (p) {
-                         // 3. 清空上一帧捕获的图形
-                         capturedGraphics = [];
-
-                         // 4. 执行原始动画代码。它不会真的在屏幕上画任何东西，
-                         //    而是会调用我们覆盖过的函数，将所有图形数据存入 capturedGraphics
-                         eval(codeWithSpeedControl);
-                         draw();
-
-                         // 5. 现在，我们完全控制了渲染
+                         // A. 准备好要执行的代码
+                         let codeToExecute = codeWithSpeedControl;
+                         
+                         // B. 如果需要动态颜色，就修改代码字符串
                          if (isColorChangeActive) {
-                             // 如果开启颜色，设置 HSL 模式并用动态颜色重绘所有捕获的图形
                              colorMode(HSL, 360, 100, 100);
-                             stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70);
+                             let dynamicStroke = `stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70)`;
+                             // 这个正则表达式非常安全，只会替换 stroke(...) 的参数部分
+                             codeToExecute = codeToExecute.replace(/stroke\([^)]+\)/g, dynamicStroke);
                          } else {
-                             // 如果关闭，就什么都不做，让 eval 代码里的 stroke() 效果生效
-                             // (eval 已经设置好了原始的 stroke 颜色)
-                             // 这里不需要重置 colorMode，因为 eval 会自己设置
+                             colorMode(RGB, 255);
                          }
 
-                         // 6. 遍历捕获的图形并真正地绘制它们
-                         for (const graphic of capturedGraphics) {
-                             if (graphic.type === 'point') {
-                                 // 由于 eval 中已经调用了 background() 和 stroke(), 我们这里只需绘制
-                                 point(...graphic.args);
-                             } else if (graphic.type === 'line') {
-                                 line(...graphic.args);
-                             } else if (graphic.type === 'quad') {
-                                 quad(...graphic.args);
-                             }
-                         }
+                         // C. 执行代码
+                         eval(codeToExecute);
+                         draw();
                     }
                 };
             };
