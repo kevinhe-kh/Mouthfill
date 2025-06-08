@@ -54,21 +54,14 @@
     <div id="canvas-container"></div>
 
     <script>
-        const codeSnippets = [
-            { name: "宇宙绽放", code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=> point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
-            { name: "电光之海", code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
-            { name: "混沌星爆", code: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
-            { name: "丝绸星云", code: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215] ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=(PI/60)*5,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}` },
-            { name: "水晶力场", code: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e] ,s=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=(.02)*5,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}` },
-            { name: "几何引擎", code: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=(s/4)*5)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}` }
-        ];
-
+        // 全局状态变量
         let currentSketch = null;
         let speedMultiplier = 1.0;
         let hueSpeedMultiplier = 1.0;
         let isColorChangeActive = false;
         let activeSnippetIndex = -1;
         
+        // DOM 元素
         const buttonContainer = document.getElementById('button-container');
         const speedSlider = document.getElementById('speed-slider');
         const speedValueLabel = document.getElementById('speed-value');
@@ -77,6 +70,157 @@
         const hueSpeedSlider = document.getElementById('hue-speed-slider');
         const hueSpeedValueLabel = document.getElementById('hue-speed-value');
 
+        // =================================================================
+        //            彻底重构：将动画逻辑封装成标准 p5.js 对象
+        // =================================================================
+        const sketches = [
+            {
+                name: "宇宙绽放",
+                setup: function(p) {
+                    p.createCanvas(400, 400);
+                    this.t = 0;
+                },
+                draw: function(p) {
+                    p.background(6, 96);
+                    if (isColorChangeActive) {
+                        p.colorMode(p.HSL, 360, 100, 100);
+                        p.stroke((p.frameCount * hueSpeedMultiplier) % 360, 90, 70);
+                    } else {
+                        p.colorMode(p.RGB);
+                        p.stroke(400, 46);
+                    }
+                    
+                    const timeStep = (p.PI / 90) * 5 * speedMultiplier;
+                    this.t += timeStep;
+                    
+                    const a = (x,y,t) => {
+                        let k=x/8-12.5, e=y/8-12.5;
+                        let o=p.mag(k,e)/12*p.cos(p.sin(k/2)*p.cos(e/2));
+                        let d=5*p.cos(o);
+                        return p.point((x+d*k*(p.sin(d*2+t)+p.sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*p.cos(d+t))*1.5+300);
+                    };
+
+                    for(let i=4e4; i--;) a(i%200, i/200, this.t);
+                }
+            },
+            {
+                name: "电光之海",
+                setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
+                draw: function(p) {
+                    p.background(6, 96);
+                    if (isColorChangeActive) {
+                        p.colorMode(p.HSL, 360, 100, 100);
+                        p.stroke((p.frameCount * hueSpeedMultiplier) % 360, 90, 70);
+                    } else {
+                        p.colorMode(p.RGB);
+                        p.stroke(400, 46);
+                    }
+                    
+                    this.t += (p.PI / 90) * 5 * speedMultiplier;
+
+                    const a = (x,y,t) => {
+                        let k=x/8-12.5, e=y/8-12.5;
+                        let o=3-p.mag(k,e)/3;
+                        let d=-4*(p.sin(k/2)*p.cos(e));
+                        return p.point((x+e*p.cos(t)+d*k*p.sin(d+t))*.7+k*o+130,(y-d*19+d*e*p.cos(d+t))*.7+130);
+                    };
+                    for(let i=4e4; i--;) a(i%200, i/200, this.t);
+                }
+            },
+            {
+                name: "混沌星爆",
+                setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
+                draw: function(p) {
+                    p.background(6, 96);
+                    if (isColorChangeActive) {
+                        p.colorMode(p.HSL, 360, 100, 100);
+                        p.stroke((p.frameCount * hueSpeedMultiplier) % 360, 90, 70);
+                    } else {
+                        p.colorMode(p.RGB);
+                        p.stroke(400, 46);
+                    }
+
+                    this.t += (p.PI / 90) * 5 * speedMultiplier;
+                    
+                    const a = (x,y,t) => {
+                        let k=x/8-12, e=y/8-12;
+                        let o=2-p.mag(k,e)/3;
+                        let d=-5*p.abs(p.sin(k/2)*p.cos(e*.8));
+                        return p.point((x-d*k*4+d*k*p.sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*p.cos(d+t+o)*p.sin(t+d))*.7+e*o+70);
+                    };
+                    for(let i=4e4; i--;) a(i%200, i/200, this.t);
+                }
+            },
+            {
+                name: "丝绸星云",
+                setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
+                draw: function(p) {
+                    p.background(6);
+                    if (isColorChangeActive) {
+                        p.colorMode(p.HSL, 360, 100, 100);
+                        p.stroke((p.frameCount * hueSpeedMultiplier) % 360, 90, 70);
+                    } else {
+                        p.colorMode(p.RGB);
+                        p.stroke(255, 66);
+                    }
+                    this.t += (p.PI / 60) * 5 * speedMultiplier;
+                    const a = (x,y,t) => {
+                        let k=x/8-25, e=y/8-25;
+                        let d=5*p.cos(p.mag(k,e)/3);
+                        return [(x+d*k*p.sin(d*2.5-t)+k/2*p.sin(y/3+t))/2+100,d*19+(d-2)*5*p.abs(p.cos(d/2-t/2))+d*e+215];
+                    };
+                    for(let y=100; y<300; y++) for(let x=100; x<300; x++) p.point(...a(x,y,this.t));
+                }
+            },
+            {
+                name: "水晶力场",
+                setup: function(p) { p.createCanvas(400, 400); this.t = 0; this.s = 3; },
+                draw: function(p) {
+                    p.background(6);
+                     if (isColorChangeActive) {
+                        p.colorMode(p.HSL, 360, 100, 100);
+                        p.stroke((p.frameCount * hueSpeedMultiplier) % 360, 90, 70);
+                    } else {
+                        p.colorMode(p.RGB);
+                        p.stroke(255, 196);
+                    }
+                    p.randomSeed(0);
+                    this.t += 0.02 * 5 * speedMultiplier;
+                    const a = (x,y,t) => {
+                        let k=x/8-25, e=y/8-25;
+                        let d=2*p.cos(p.mag(k,e)/3-t);
+                        return [x+d*k,y+d*e];
+                    };
+                    for(let y=100; y<300; y+=this.s) for(let x=100; x<300; x+=this.s) p.line(...p.shuffle([a(x,y,this.t),a(x,y+this.s,this.t),a(x+s,y,this.t)]).flat());
+                }
+            },
+             {
+                name: "几何引擎",
+                setup: function(p) { p.createCanvas(720, 720); this.t = 0; },
+                draw: function(p) {
+                    p.background(0);
+                    this.t += (p.PI / 30 / 4) * 5 * speedMultiplier;
+                    for(let s=p.PI/30, j=this.t/4%s; j<7; j+=s) {
+                        for(let i=0; i<p.TAU; i+=s*2) {
+                            if (isColorChangeActive) {
+                                p.colorMode(p.HSL, 360, 100, 100);
+                                p.stroke((p.frameCount * hueSpeedMultiplier + j*50) % 360, 90, 70);
+                            } else {
+                                p.colorMode(p.RGB);
+                                p.stroke(j*50);
+                            }
+                            const getCoords = ([u,v]) => {
+                                let e=v**3*4+0;
+                                return [e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+360, 360+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)];
+                            };
+                            p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));
+                        }
+                    }
+                }
+            }
+        ];
+
+        // 事件监听器
         speedSlider.addEventListener('input', (e) => {
             speedMultiplier = parseFloat(e.target.value);
             speedValueLabel.textContent = `${speedMultiplier.toFixed(1)}x`;
@@ -92,104 +236,49 @@
             hueSliderWrapper.classList.toggle('hidden', !isColorChangeActive);
         });
         
-        function runSketch(snippet, index) {
-            activeSnippetIndex = index;
-            updateActiveButton();
-
+        // =================================================================
+        //                 新的、可靠的 Sketch 运行器
+        // =================================================================
+        function runSketch(sketchData, index) {
             if (currentSketch) {
                 currentSketch.remove();
             }
-            
-            // 为速度滑轨注入控制
-            const codeWithSpeedControl = snippet.code.replace('t+=', `t+=speedMultiplier*`);
-            
-            // 从代码中提取出 background() 和 stroke() 的参数
-            const bgMatch = snippet.code.match(/background\(([^)]+)\)/);
-            const strokeMatch = snippet.code.match(/stroke\(([^)]+)\)/);
-            const originalBg = bgMatch ? bgMatch[1] : '0';
-            const originalStroke = strokeMatch ? strokeMatch[1] : '255';
+            activeSnippetIndex = index;
+            updateActiveButton();
 
-            // 修改原始代码，让它只做计算，不绘制
-            const calculationCode = codeWithSpeedControl
-                .replace(/background\([^)]+\)/, '')
-                .replace(/stroke\([^)]+\)/, '')
-                .replace(/\.point\(/g, '.push(') // 将 point 变成 push 到数组
-                .replace(/\.line\(/g, '.push(')
-                .replace(/\.quad\(/g, '.push_quad(')
-
-            const sketch = (p) => {
-                let t, a, s, w;
-                let graphics_points = [];
-                let graphics_lines = [];
-                let graphics_quads = [];
-
-                // 定义我们自己的绘图函数，它们只收集数据
-                p.push = (...args) => graphics_points.push(args);
-                p.push_quad = (...args) => graphics_quads.push(args);
+            // 创建一个 p5 实例
+            currentSketch = new p5((p) => {
+                // 将 sketchData 绑定到 p5 实例上，以便在 setup 和 draw 中访问
+                p.sketchData = sketchData;
 
                 p.setup = () => {
-                    // setup 只执行一次，创建画布和初始化变量
-                    with (p) {
-                         // t=0; s=3; 等
-                         eval(codeWithSpeedControl.split(',draw=')[0]);
-                         // createCanvas()
-                         eval(snippet.code.match(/createCanvas\([^)]+\)/)[0]);
-                    }
+                    p.sketchData.setup(p);
                 };
-                
+
                 p.draw = () => {
-                    with (p) {
-                         // 清空上一帧的数据
-                         graphics_points = [];
-                         graphics_lines = [];
-                         graphics_quads = [];
-
-                         // 执行计算，填充我们的数据数组
-                         let drawFuncBody = calculationCode.match(/draw=\$=>(.*)/)[1];
-                         let drawFunc = new Function(drawFuncBody);
-                         drawFunc.call(p);
-                         
-                         // ============ 渲染阶段 =============
-                         // 我们现在完全控制绘制
-
-                         // 1. 设置背景
-                         eval(`background(${originalBg})`);
-
-                         // 2. 设置颜色
-                         if (isColorChangeActive) {
-                             colorMode(HSL, 360, 100, 100);
-                             stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70);
-                         } else {
-                             colorMode(RGB, 255);
-                             eval(`stroke(${originalStroke})`);
-                         }
-
-                         // 3. 绘制所有图形
-                         for(const args of graphics_points) point(...args);
-                         for(const args of graphics_lines) line(...args);
-                         for(const args of graphics_quads) quad(...args);
-                    }
+                    p.sketchData.draw(p);
                 };
-            };
-            
-            currentSketch = new p5(sketch, 'canvas-container');
+            }, 'canvas-container');
         }
 
         function updateActiveButton() {
+            const buttons = buttonContainer.querySelectorAll('button');
             buttons.forEach((button, i) => {
                 button.classList.toggle('active', i === activeSnippetIndex);
             });
         }
 
-        codeSnippets.forEach((snippet, index) => {
+        // 创建按钮
+        sketches.forEach((sketchData, index) => {
             const button = document.createElement('button');
-            button.textContent = snippet.name;
-            button.addEventListener('click', () => runSketch(snippet, index));
+            button.textContent = sketchData.name;
+            button.addEventListener('click', () => runSketch(sketchData, index));
             buttonContainer.appendChild(button);
         });
 
-        if (codeSnippets.length > 0) {
-            runSketch(codeSnippets[0], 0);
+        // 自动运行第一个动画
+        if (sketches.length > 0) {
+            runSketch(sketches[0], 0);
         }
     </script>
 </body>
