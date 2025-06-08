@@ -36,7 +36,6 @@
     <div id="controls-container">
         <div class="control-wrapper">
             <label for="speed-slider">速度乘数:</label>
-            <!-- 1. 速度滑轨范围 0.2 - 2.5 -->
             <input type="range" id="speed-slider" min="0.2" max="2.5" value="1" step="0.1">
             <span id="speed-value">1.0x</span>
         </div>
@@ -56,7 +55,6 @@
 
     <script>
         const codeSnippets = [
-            // 2. 初始速度是原始速度的 5 倍
             { name: "宇宙绽放", code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=> point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
             { name: "电光之海", code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
             { name: "混沌星爆", code: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
@@ -102,31 +100,74 @@
                 currentSketch.remove();
             }
             
-            // 为速度滑轨注入控制代码
+            // 为速度滑轨注入控制
             const codeWithSpeedControl = snippet.code.replace('t+=', `t+=speedMultiplier*`);
+            
+            // 从代码中提取出 background() 和 stroke() 的参数
+            const bgMatch = snippet.code.match(/background\(([^)]+)\)/);
+            const strokeMatch = snippet.code.match(/stroke\(([^)]+)\)/);
+            const originalBg = bgMatch ? bgMatch[1] : '0';
+            const originalStroke = strokeMatch ? strokeMatch[1] : '255';
+
+            // 修改原始代码，让它只做计算，不绘制
+            const calculationCode = codeWithSpeedControl
+                .replace(/background\([^)]+\)/, '')
+                .replace(/stroke\([^)]+\)/, '')
+                .replace(/\.point\(/g, '.push(') // 将 point 变成 push 到数组
+                .replace(/\.line\(/g, '.push(')
+                .replace(/\.quad\(/g, '.push_quad(')
 
             const sketch = (p) => {
-                let draw, t, a, s, w;
+                let t, a, s, w;
+                let graphics_points = [];
+                let graphics_lines = [];
+                let graphics_quads = [];
+
+                // 定义我们自己的绘图函数，它们只收集数据
+                p.push = (...args) => graphics_points.push(args);
+                p.push_quad = (...args) => graphics_quads.push(args);
+
+                p.setup = () => {
+                    // setup 只执行一次，创建画布和初始化变量
+                    with (p) {
+                         // t=0; s=3; 等
+                         eval(codeWithSpeedControl.split(',draw=')[0]);
+                         // createCanvas()
+                         eval(snippet.code.match(/createCanvas\([^)]+\)/)[0]);
+                    }
+                };
                 
-                // **3. 最终的、最简单的修复方案**
                 p.draw = () => {
                     with (p) {
-                         // A. 准备好要执行的代码
-                         let codeToExecute = codeWithSpeedControl;
+                         // 清空上一帧的数据
+                         graphics_points = [];
+                         graphics_lines = [];
+                         graphics_quads = [];
+
+                         // 执行计算，填充我们的数据数组
+                         let drawFuncBody = calculationCode.match(/draw=\$=>(.*)/)[1];
+                         let drawFunc = new Function(drawFuncBody);
+                         drawFunc.call(p);
                          
-                         // B. 如果需要动态颜色，就修改代码字符串
+                         // ============ 渲染阶段 =============
+                         // 我们现在完全控制绘制
+
+                         // 1. 设置背景
+                         eval(`background(${originalBg})`);
+
+                         // 2. 设置颜色
                          if (isColorChangeActive) {
                              colorMode(HSL, 360, 100, 100);
-                             let dynamicStroke = `stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70)`;
-                             // 这个正则表达式非常安全，只会替换 stroke(...) 的参数部分
-                             codeToExecute = codeToExecute.replace(/stroke\([^)]+\)/g, dynamicStroke);
+                             stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70);
                          } else {
                              colorMode(RGB, 255);
+                             eval(`stroke(${originalStroke})`);
                          }
 
-                         // C. 执行代码
-                         eval(codeToExecute);
-                         draw();
+                         // 3. 绘制所有图形
+                         for(const args of graphics_points) point(...args);
+                         for(const args of graphics_lines) line(...args);
+                         for(const args of graphics_quads) quad(...args);
                     }
                 };
             };
@@ -135,7 +176,6 @@
         }
 
         function updateActiveButton() {
-            const buttons = buttonContainer.querySelectorAll('button');
             buttons.forEach((button, i) => {
                 button.classList.toggle('active', i === activeSnippetIndex);
             });
