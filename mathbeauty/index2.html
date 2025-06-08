@@ -87,7 +87,7 @@
 <body>
 
     <header>
-        <h1>Quantum 2Canvas</h1>
+        <h1>Quantum Canvas</h1>
         <p>An interactive engine for formulaic and generative art.</p>
     </header>
 
@@ -198,7 +198,7 @@
                 originalCode: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`,
                 originalBg: [0], originalStroke: [255],
                 setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
-                draw: function(p) { p.background(0); const s=p.PI/30; for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){if(isColorChangeActive){p.colorMode(p.HSL,360,100,100);const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;const hue=p.map(p.sin(time),-1,1,0,360);const sat=p.map(p.cos(time*0.5),-1,1,50,100);p.stroke(hue,sat,75);}else{p.colorMode(p.RGB);p.stroke(j*50);} const getCoords=([u,v])=>{let e=v**3*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)];};p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));}} }
+                draw: function(p) { p.background(0); const s=p.PI/30; for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){if(isColorChangeActive){p.colorMode(p.HSL,360,100,100);const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;const hue=p.map(p.sin(time),-1,1,0,360);const sat=p.map(p.cos(time*0.5),-1,1,50,100);p.stroke(hue,sat,75);}else{p.colorMode(p.RGB);p.stroke(j*50);} const getCoords=([u,v])=>{let e=v**3*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-t)-e*p.sin(u+j)];};p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));}} }
             },
             {
                 name: "幻光粒子", enName: "Phantom Particles",
@@ -206,28 +206,29 @@
                 originalBg: [0, 9], originalStroke: [255],
                 setup: function(p) {
                     p.createCanvas(400, 400);
-                    p.translate(200, 200); // 将坐标原点移到画布中心
                     this.particles = [];
                     this.t = 0;
                 },
                 draw: function(p) {
                     p.background(0, 9);
                     this.t++;
-                    
                     const time = this.t * speedMultiplier;
                     
-                    // 修复后的粒子生成
+                    // 修复语法错误并明确粒子生成逻辑
                     if (this.particles.length < 5000) {
-                        const newParticles = Array(20).fill(0).map(() => 
-                            p.createVector(p.random(-1, 1), p.random(-1, 1))
-                             .mult(99)
+                        const newParticles = [...'p5js'].map(() => 
+                            p.createVector(p.random(-200, 200), p.random(-200, 200))
                         );
                         this.particles.push(...newParticles);
                     }
                     
+                    this.particles = this.particles.slice(-5000);
+                    
+                    p.translate(200, 200); // 将原点移到中心
+
                     this.particles.forEach(v => {
                         // 修复后的核心数学逻辑
-                        let power = p.pow(1.5, p.sin(time / 99));
+                        let power = p.pow(1.2, p.sin(time / 99));
                         let k = p.sqrt(5 + (p.cos(v.y / 33 + time / 240) * power * p.sin(v.x / 33)));
                         let r = (p.floor(k) & 4) / 25;
                         
@@ -240,10 +241,7 @@
                             p.stroke(49 * k);
                         }
                         
-                        // 更新位置
                         v.add(p.sin(r * v.y), p.cos(v.x * r));
-                        
-                        // 绘制点 (因为 setup 中有 translate, 所以直接画)
                         p.point(v.x, v.y);
                     });
                 }
