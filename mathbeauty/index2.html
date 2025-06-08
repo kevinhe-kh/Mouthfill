@@ -204,7 +204,7 @@
                     const s = p.PI / 30;
                     
                     // ******** 这是唯一的修复点 ********
-                    // 准确复刻原始代码的逻辑：在 for 循环的初始化部分更新 t 和 j
+                    // 完美复刻原始代码的逻辑：在 for 循环的初始化部分更新 t 和 j
                     for(let j = (this.t += (s / 4) * speedMultiplier) / 4 % s; j < 7; j += s) {
                         for(let i=0; i < p.TAU; i += s*2){
                             if(isColorChangeActive){ 
