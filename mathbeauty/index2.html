@@ -200,13 +200,13 @@
                 setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
                 draw: function(p) { p.background(0); const s=p.PI/30; for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){if(isColorChangeActive){p.colorMode(p.HSL,360,100,100);const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;const hue=p.map(p.sin(time),-1,1,0,360);const sat=p.map(p.cos(time*0.5),-1,1,50,100);p.stroke(hue,sat,75);}else{p.colorMode(p.RGB);p.stroke(j*50);} const getCoords=([u,v])=>{let e=v**3*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)];};p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));}} }
             },
-            // ******** 经过彻底重构和修复的第七段动画 ********
             {
                 name: "幻光粒子", enName: "Phantom Particles",
                 originalCode: `$= [],t=0,draw=_=>{t++||createCanvas(720,720);background(0,9);($=[...$.slice(-5e3),...[...].map(_=>p5.Vector.random3D().add(3.6,2).mult(99))]).map(v=>stroke(49*(k=sqrt(5+(cos(v.y/33+t/240)*19^19*sin(v.x/33))))).point(v.add(sin((r=(k&4)/25)*v.y),cos(v.x*r))))}`,
                 originalBg: [0, 9], originalStroke: [255],
                 setup: function(p) {
                     p.createCanvas(400, 400);
+                    p.translate(200, 200); // 将坐标原点移到画布中心
                     this.particles = [];
                     this.t = 0;
                 },
@@ -216,38 +216,35 @@
                     
                     const time = this.t * speedMultiplier;
                     
-                    // 每帧添加 10 个新粒子
-                    if (p.frameCount % 2 === 0) { // 不需要每帧都加
-                        const newParticles = Array(10).fill(0).map(() => p.createVector(p.random(-1,1), p.random(-1,1)));
+                    // 修复后的粒子生成
+                    if (this.particles.length < 5000) {
+                        const newParticles = Array(20).fill(0).map(() => 
+                            p.createVector(p.random(-1, 1), p.random(-1, 1))
+                             .mult(99)
+                        );
                         this.particles.push(...newParticles);
                     }
-
-                    // 限制粒子总数
-                    this.particles = this.particles.slice(-5000);
                     
-                    // 更新并绘制每个粒子
                     this.particles.forEach(v => {
                         // 修复后的核心数学逻辑
-                        let power = p.pow(1.5, p.sin(time/99)); // 使用 pow 代替 ^, 19^19太大，用一个动态值
-                        let k = p.sqrt(5 + (p.cos(v.y * 0.1 + time / 240) * power * p.sin(v.x * 0.1)));
-                        let r = (p.floor(k) & 4) / 25; // 使用 floor 确保位运算的稳定性
+                        let power = p.pow(1.5, p.sin(time / 99));
+                        let k = p.sqrt(5 + (p.cos(v.y / 33 + time / 240) * power * p.sin(v.x / 33)));
+                        let r = (p.floor(k) & 4) / 25;
                         
                         if (isColorChangeActive) {
                             p.colorMode(p.HSL, 360, 100, 100, 1);
                             const hue = (k * 40 + p.frameCount * hueSpeedMultiplier) % 360;
-                            p.stroke(hue, 90, 70, 0.5); // 增加半透明效果
+                            p.stroke(hue, 90, 70, 0.5);
                         } else {
                             p.colorMode(p.RGB);
                             p.stroke(49 * k);
                         }
                         
-                        // 在标准化空间内更新位置
-                        v.add(p.sin(r * v.y) * 0.05, p.cos(v.x * r) * 0.05);
-
-                        // 绘制时映射到画布坐标
-                        const screenX = p.map(v.x, -1, 1, 0, 400);
-                        const screenY = p.map(v.y, -1, 1, 0, 400);
-                        p.point(screenX, screenY);
+                        // 更新位置
+                        v.add(p.sin(r * v.y), p.cos(v.x * r));
+                        
+                        // 绘制点 (因为 setup 中有 translate, 所以直接画)
+                        p.point(v.x, v.y);
                     });
                 }
             }
