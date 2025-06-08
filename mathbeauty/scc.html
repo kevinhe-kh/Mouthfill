@@ -36,7 +36,8 @@
     <div id="controls-container">
         <div class="control-wrapper">
             <label for="speed-slider">速度乘数:</label>
-            <input type="range" id="speed-slider" min="1" max="10" value="1" step="0.1">
+            <!-- 修改1：速度滑轨范围 0.2 - 2.5 -->
+            <input type="range" id="speed-slider" min="0.2" max="2.5" value="1" step="0.1">
             <span id="speed-value">1.0x</span>
         </div>
         <div class="control-wrapper">
@@ -101,31 +102,51 @@
             }
             
             // 为速度滑轨注入控制代码
-            // 在 't+=' 后面插入 'speedMultiplier*'
             const codeWithSpeedControl = snippet.code.replace('t+=', `t+=speedMultiplier*`);
 
             const sketch = (p) => {
                 let draw, t, a, s, w;
+                // **修改2：这是决定性修复**
+                // 1. 创建一个数组来捕获所有被绘制的点/线
+                let capturedGraphics = [];
+
+                // 2. 覆盖 p5 的绘图函数
+                p.point = (...args) => { capturedGraphics.push({ type: 'point', args: args }); };
+                p.line = (...args) => { capturedGraphics.push({ type: 'line', args: args }); };
+                p.quad = (...args) => { capturedGraphics.push({ type: 'quad', args: args }); };
                 
                 p.draw = () => {
                     with (p) {
-                         let codeToExecute = codeWithSpeedControl;
+                         // 3. 清空上一帧捕获的图形
+                         capturedGraphics = [];
 
-                         // **决定性修复**
+                         // 4. 执行原始动画代码。它不会真的在屏幕上画任何东西，
+                         //    而是会调用我们覆盖过的函数，将所有图形数据存入 capturedGraphics
+                         eval(codeWithSpeedControl);
+                         draw();
+
+                         // 5. 现在，我们完全控制了渲染
                          if (isColorChangeActive) {
-                             // 1. 设置 p5 进入 HSL 颜色模式
+                             // 如果开启颜色，设置 HSL 模式并用动态颜色重绘所有捕获的图形
                              colorMode(HSL, 360, 100, 100);
-                             // 2. 准备好要替换成的动态颜色 stroke() 字符串
-                             let dynamicStroke = `stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70)`;
-                             // 3. 使用正则表达式，安全地替换所有 stroke() 的参数
-                             codeToExecute = codeToExecute.replace(/stroke\([^)]+\)/g, dynamicStroke);
+                             stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70);
                          } else {
-                             // 如果关闭，则确保 p5 回到默认的 RGB 模式
-                             colorMode(RGB, 255);
+                             // 如果关闭，就什么都不做，让 eval 代码里的 stroke() 效果生效
+                             // (eval 已经设置好了原始的 stroke 颜色)
+                             // 这里不需要重置 colorMode，因为 eval 会自己设置
                          }
 
-                         eval(codeToExecute);
-                         draw();
+                         // 6. 遍历捕获的图形并真正地绘制它们
+                         for (const graphic of capturedGraphics) {
+                             if (graphic.type === 'point') {
+                                 // 由于 eval 中已经调用了 background() 和 stroke(), 我们这里只需绘制
+                                 point(...graphic.args);
+                             } else if (graphic.type === 'line') {
+                                 line(...graphic.args);
+                             } else if (graphic.type === 'quad') {
+                                 quad(...graphic.args);
+                             }
+                         }
                     }
                 };
             };
