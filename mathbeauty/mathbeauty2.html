@@ -58,6 +58,10 @@
         button:hover {
             background-color: #4CAF50;
         }
+        button.active {
+            background-color: #4CAF50;
+            border-color: #8cff90;
+        }
         button:active {
             transform: scale(0.98);
         }
@@ -77,6 +81,8 @@
             padding: 5px;
             background-color: #282828;
             line-height: 0; /* Prevents extra space below canvas */
+            min-height: 410px; /* Reserve space for canvas */
+            min-width: 410px;
         }
     </style>
 </head>
@@ -103,37 +109,35 @@
     </div>
 
     <script>
-        // We now use an array of objects to store the code and its original speed.
-        // The `t += ...` part in each code snippet is replaced with `t += timeStep`.
         const codeSnippets = [
             {
                 code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=>
                 point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300)
-                t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
+                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
                 originalSpeed: "PI/90"
             },
             {
                 code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130)
-                t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
+                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
                 originalSpeed: "PI/90"
             },
             {
                 code: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
-                t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
+                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=timeStep,i=4e4;i--;)a(i%200,i/200)}`,
                 originalSpeed: "PI/90"
             },
             {
                 code: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215]
-                t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=timeStep,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}`,
+                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=timeStep,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}`,
                 originalSpeed: "PI/60"
             },
             {
                 code: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e]
-                s=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=timeStep,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}`,
+                ,s=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=timeStep,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}`,
                 originalSpeed: "0.02"
             },
             {
-                code: `t=0,draw=$=>{t||createCanvas(720,720);background(0);t+=timeStep;for(s=PI/30,j=t/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`,
+                code: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=timeStep)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`,
                 originalSpeed: "(PI/30)/4"
             }
         ];
@@ -141,6 +145,7 @@
         // Global state
         let currentSketch = null;
         let speedMultiplier = 1.0;
+        let activeSnippetIndex = 0;
         
         // DOM Elements
         const buttonContainer = document.getElementById('button-container');
@@ -153,30 +158,51 @@
             speedValueLabel.textContent = `${speedMultiplier.toFixed(1)}x`;
         });
         
-        // Function to run a sketch from a snippet object
-        function runSketch(snippet) {
+        function runSketch(snippet, index) {
+            activeSnippetIndex = index;
+            updateActiveButton();
+
             if (currentSketch) {
                 currentSketch.remove();
             }
 
             const sketch = (p) => {
-                let draw, t, a, s, w; // Declare variables the user's code might use
-                
-                // We must use eval here because the original speeds can be expressions like "PI/90"
-                const baseSpeed = eval(snippet.originalSpeed); 
-                
-                p.draw = () => {
-                    // 'with(p)' makes p5 functions available without the 'p.' prefix
+                // Declare variables in the sketch's scope
+                let setupCode, drawCode;
+
+                // **THIS IS THE KEY FIX:** We split the code into setup and draw parts.
+                const parts = snippet.code.split(',draw=$=>{');
+                setupCode = parts[0];
+                drawCode = parts[1] ? parts[1].slice(0, -1) : ''; // Remove trailing '}'
+
+                // Replace the original time increment with our dynamic one.
+                const timeIncrementPattern = /(t\s*\+=\s*)[^,;})]+/;
+                if(timeIncrementPattern.test(drawCode)) {
+                    drawCode = drawCode.replace(timeIncrementPattern, `$1timeStep`);
+                } else {
+                    // Handle snippet 6 which has a different structure
+                    const specialPattern = /(j=\(t\+=)timeStep(\)\/4\%s)/;
+                    if(specialPattern.test(drawCode)){
+                         drawCode = drawCode.replace(specialPattern, `t+=timeStep;j=t/4%s`);
+                    }
+                }
+
+                // p.setup runs ONCE
+                p.setup = () => {
                     with (p) {
-                        // Calculate the actual time step for this frame
-                        const timeStep = baseSpeed * speedMultiplier;
-                        
-                        // Execute the code. It will define its own `draw` function.
-                        // That `draw` function uses our `timeStep` variable.
-                        eval(snippet.code);
-                        
-                        // Call the newly defined draw function
-                        draw(); 
+                        // Safely evaluate setup code (e.g., 'a=...', 't=0')
+                        eval(setupCode);
+                    }
+                };
+
+                // p.draw runs in a loop
+                p.draw = () => {
+                    const baseSpeed = p.eval(snippet.originalSpeed); 
+                    const timeStep = baseSpeed * speedMultiplier;
+                    
+                    with (p) {
+                        // Execute ONLY the drawing code each frame
+                        eval(drawCode);
                     }
                 };
             };
@@ -184,20 +210,24 @@
             currentSketch = new p5(sketch, 'canvas-container');
         }
 
+        function updateActiveButton() {
+            const buttons = buttonContainer.querySelectorAll('button');
+            buttons.forEach((button, i) => {
+                button.classList.toggle('active', i === activeSnippetIndex);
+            });
+        }
+
         // Create a button for each code snippet
         codeSnippets.forEach((snippet, index) => {
             const button = document.createElement('button');
             button.textContent = `Art ${index + 1}`;
-            button.addEventListener('click', () => runSketch(snippet));
+            button.addEventListener('click', () => runSketch(snippet, index));
             buttonContainer.appendChild(button);
         });
 
         // Automatically run the first sketch on page load
         if (codeSnippets.length > 0) {
-            speedSlider.value = 1.0; // Reset slider to default
-            speedMultiplier = 1.0;
-            speedValueLabel.textContent = '1.0x';
-            runSketch(codeSnippets[0]);
+            runSketch(codeSnippets[0], 0);
         }
     </script>
 </body>
