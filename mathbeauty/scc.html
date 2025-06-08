@@ -90,7 +90,7 @@
             border-radius: 8px;
             padding: 5px;
             background-color: #282828;
-            line-height: 0; /* 防止 canvas 下方出现多余空隙 */
+            line-height: 0;
         }
     </style>
 </head>
@@ -111,59 +111,30 @@
             <label for="color-toggle">启用动态颜色:</label>
             <input type="checkbox" id="color-toggle">
         </div>
-        <!-- 新增的颜色速度滑轨 -->
         <div class="control-wrapper hidden" id="hue-slider-wrapper">
             <label for="hue-speed-slider">颜色速度:</label>
             <input type="range" id="hue-speed-slider" min="0" max="10" value="2" step="0.1">
             <span id="hue-speed-value">2.0</span>
         </div>
-        <div id="button-container">
-            <!-- 按钮将由 JavaScript 在此生成 -->
-        </div>
+        <div id="button-container"></div>
     </div>
 
-    <div id="canvas-container">
-        <!-- p5.js 画布将放在此处 -->
-    </div>
+    <div id="canvas-container"></div>
 
     <script>
         const codeSnippets = [
-            {
-                name: "宇宙绽放",
-                code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=>
-                point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300)
-                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`
-            },
-            {
-                name: "电光之海",
-                code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130)
-                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`
-            },
-            {
-                name: "混沌星爆",
-                code: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)
-                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`
-            },
-            {
-                name: "丝绸星云",
-                code: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215]
-                ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=PI/60,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}`
-            },
-            {
-                name: "水晶力场",
-                code: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e]
-                ,s=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=.02,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}`
-            },
-            {
-                name: "几何引擎",
-                code: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`
-            }
+            { name: "宇宙绽放", code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=> point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}` },
+            { name: "电光之海", code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}` },
+            { name: "混沌星爆", code: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}` },
+            { name: "丝绸星云", code: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215] ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=PI/60,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}` },
+            { name: "水晶力场", code: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e] ,s=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=.02,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}` },
+            { name: "几何引擎", code: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}` }
         ];
 
         // 全局状态变量
         let currentSketch = null;
         let speedMultiplier = 1.0;
-        let hueSpeedMultiplier = 2.0; // 新增：颜色速度变量
+        let hueSpeedMultiplier = 2.0;
         let isColorChangeActive = false;
         let activeSnippetIndex = -1;
         
@@ -189,12 +160,7 @@
 
         colorToggle.addEventListener('change', (e) => {
             isColorChangeActive = e.target.checked;
-            // 根据复选框状态，显示或隐藏颜色速度滑轨
-            if (isColorChangeActive) {
-                hueSliderWrapper.classList.remove('hidden');
-            } else {
-                hueSliderWrapper.classList.add('hidden');
-            }
+            hueSliderWrapper.classList.toggle('hidden', !isColorChangeActive);
         });
         
         function runSketch(snippet, index) {
@@ -205,29 +171,25 @@
                 currentSketch.remove();
             }
 
-            const modifiedCode = snippet.code
-                .replace('t+=PI/90', 't+=(PI/90)*speedMultiplier')
-                .replace('t+=PI/60', 't+=(PI/60)*speedMultiplier')
-                .replace('t+=.02', 't+=(.02)*speedMultiplier')
-                .replace('t+=s/4', 't+=(s/4)*speedMultiplier');
-
             const sketch = (p) => {
                 let draw, t, a, s, w;
                 
                 p.draw = () => {
                     with (p) {
-                         let animationCode = modifiedCode;
+                         // 先准备好包含速度控制的动画代码
+                         let animationCode = snippet.code
+                            .replace('t+=PI/90', 't+=(PI/90)*speedMultiplier')
+                            .replace('t+=PI/60', 't+=(PI/60)*speedMultiplier')
+                            .replace('t+=.02', 't+=(.02)*speedMultiplier')
+                            .replace('t+=s/4', 't+=(s/4)*speedMultiplier');
+                        
                          if (isColorChangeActive) {
-                             // 如果勾选了颜色变化
-                             colorMode(HSL, 360, 100, 100);
-                             // 使用 frameCount 和新的颜色速度变量来计算当前色相
-                             let currentHue = (frameCount * hueSpeedMultiplier) % 360;
-                             stroke(currentHue, 90, 70);
-                             // 从原始代码中移除 stroke() 调用，以防它覆盖我们的颜色
-                             animationCode = animationCode.replace(/stroke\([^)]+\);?/g, '');
-                         } else {
-                             // 重置为默认的 RGB 模式
-                             colorMode(RGB, 255);
+                             // **这是关键的修复**
+                             // 我们不在外部设置颜色，而是在代码字符串内部，
+                             // 在 for 循环开始前注入我们的颜色设置代码。
+                             // 这可以确保我们的颜色设置是最后生效的，并且不会破坏原始代码。
+                             const colorInjectionCode = `colorMode(HSL,360,100,100);stroke((frameCount*hueSpeedMultiplier)%360,90,70);`;
+                             animationCode = animationCode.replace('for(', colorInjectionCode + 'for(');
                          }
 
                          eval(animationCode);
