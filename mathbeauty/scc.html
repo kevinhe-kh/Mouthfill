@@ -35,8 +35,7 @@
 
     <div id="controls-container">
         <div class="control-wrapper">
-            <label for="speed-slider">动画速度:</label>
-            <!-- 滑轨恢复默认值 1，范围 1-10 -->
+            <label for="speed-slider">速度乘数:</label>
             <input type="range" id="speed-slider" min="1" max="10" value="1" step="0.1">
             <span id="speed-value">1.0x</span>
         </div>
@@ -46,7 +45,6 @@
         </div>
         <div class="control-wrapper hidden" id="hue-slider-wrapper">
             <label for="hue-speed-slider">颜色速度:</label>
-            <!-- 滑轨恢复默认值 1，范围 1-10 -->
             <input type="range" id="hue-speed-slider" min="1" max="10" value="1" step="0.1">
             <span id="hue-speed-value">1.0</span>
         </div>
@@ -56,7 +54,6 @@
     <div id="canvas-container"></div>
 
     <script>
-        // **修改1：在代码字符串中直接将速度乘以5**
         const codeSnippets = [
             { name: "宇宙绽放", code: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=> point((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
             { name: "电光之海", code: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130) ,t=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=(PI/90)*5,i=4e4;i--;)a(i%200,i/200)}` },
@@ -66,14 +63,12 @@
             { name: "几何引擎", code: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=(s/4)*5)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}` }
         ];
 
-        // 全局状态变量恢复默认值
         let currentSketch = null;
         let speedMultiplier = 1.0;
         let hueSpeedMultiplier = 1.0;
         let isColorChangeActive = false;
         let activeSnippetIndex = -1;
         
-        // DOM 元素
         const buttonContainer = document.getElementById('button-container');
         const speedSlider = document.getElementById('speed-slider');
         const speedValueLabel = document.getElementById('speed-value');
@@ -82,7 +77,6 @@
         const hueSpeedSlider = document.getElementById('hue-speed-slider');
         const hueSpeedValueLabel = document.getElementById('hue-speed-value');
 
-        // 事件监听器
         speedSlider.addEventListener('input', (e) => {
             speedMultiplier = parseFloat(e.target.value);
             speedValueLabel.textContent = `${speedMultiplier.toFixed(1)}x`;
@@ -106,29 +100,31 @@
                 currentSketch.remove();
             }
             
-            // 为动画速度滑轨注入控制代码
-            const modifiedCode = snippet.code
-                .replace('t+=', `t+=speedMultiplier*`); // 找到第一个 't+=' 并插入滑轨控制
+            // 为速度滑轨注入控制代码
+            // 在 't+=' 后面插入 'speedMultiplier*'
+            const codeWithSpeedControl = snippet.code.replace('t+=', `t+=speedMultiplier*`);
 
             const sketch = (p) => {
                 let draw, t, a, s, w;
                 
-                // **修改2：这是最关键的修复**
                 p.draw = () => {
                     with (p) {
-                         // 在执行任何代码之前，先检查是否需要动态颜色
+                         let codeToExecute = codeWithSpeedControl;
+
+                         // **决定性修复**
                          if (isColorChangeActive) {
+                             // 1. 设置 p5 进入 HSL 颜色模式
                              colorMode(HSL, 360, 100, 100);
-                             // 这里的 stroke() 调用会覆盖掉原始代码中任何的 stroke() 设置
-                             stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70);
+                             // 2. 准备好要替换成的动态颜色 stroke() 字符串
+                             let dynamicStroke = `stroke((frameCount * hueSpeedMultiplier) % 360, 90, 70)`;
+                             // 3. 使用正则表达式，安全地替换所有 stroke() 的参数
+                             codeToExecute = codeToExecute.replace(/stroke\([^)]+\)/g, dynamicStroke);
                          } else {
-                             // 如果关闭，则恢复p5的默认颜色模式
+                             // 如果关闭，则确保 p5 回到默认的 RGB 模式
                              colorMode(RGB, 255);
                          }
 
-                         // 现在执行动画代码
-                         // 动画代码中的 stroke() 会被我们上面的调用所覆盖（如果开启的话）
-                         eval(modifiedCode);
+                         eval(codeToExecute);
                          draw();
                     }
                 };
@@ -144,7 +140,6 @@
             });
         }
 
-        // 创建按钮
         codeSnippets.forEach((snippet, index) => {
             const button = document.createElement('button');
             button.textContent = snippet.name;
@@ -152,7 +147,6 @@
             buttonContainer.appendChild(button);
         });
 
-        // 自动运行第一个动画
         if (codeSnippets.length > 0) {
             runSketch(codeSnippets[0], 0);
         }
