@@ -150,15 +150,13 @@
             {
                 name: "几何引擎",
                 originalCode: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`,
-                // ******** 这是修复点 1 ********
                 setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
                 draw: function(p) {
                     p.background(0);
                     this.t += (p.PI / 30 / 4) * 5 * speedMultiplier;
-                    const s = p.PI / 30; // 确保 s 被定义
-                    // ******** 这是修复点 2 ********
+                    const s = p.PI / 30; 
                     for(let j=this.t/4%s; j<7; j+=s) {
-                        for(let i=0; i<p.TAU; i+=s*2) { // 使用 p.TAU
+                        for(let i=0; i<p.TAU; i+=s*2) { 
                             if (isColorChangeActive) {
                                 p.colorMode(p.HSL, 360, 100, 100);
                                 p.stroke((p.frameCount * hueSpeedMultiplier + j*50) % 360, 90, 70);
@@ -169,7 +167,7 @@
                             const getCoords = ([u,v]) => { 
                                 let e=v**3*4+0; 
                                 return [
-                                    e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200, // 修改中心点以适应400x400画布
+                                    e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200, 
                                     200+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)
                                 ]; 
                             };
