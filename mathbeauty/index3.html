@@ -8,13 +8,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
 
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #1a1a1a; color: #f0f0f0; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; box-sizing: border-box; }
-        header { text-align: center; margin-bottom: 20px; }
-        h1 { margin: 0; color: #ffffff; font-size: 2.5em; letter-spacing: 2px; }
-        p { color: #cccccc; }
-        #controls-container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%; max-width: 768px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #1a1a1a; color: #f0f0f0; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
         
-        /* 桌面端按钮样式 */
+        header { 
+            text-align: center; 
+            margin-bottom: 20px; 
+            padding: 20px 0; /* 为大屏幕添加一些垂直内边距 */
+            transition: all 0.3s ease; /* 为高度变化添加过渡 */
+        }
+        h1 { margin: 0; color: #ffffff; font-size: 2.5em; letter-spacing: 2px; }
+        p { color: #cccccc; margin-top: 8px; }
+
+        #controls-container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%; max-width: 720px; }
+        
+        /* ==================== 按钮样式 ==================== */
         #button-container {
             position: relative;
             display: flex;
@@ -55,30 +62,24 @@
             text-align: center;
         }
 
-        button .en-name {
-            display: block;
-            font-size: 0.75em;
-            color: #999;
-            font-weight: 400;
-            transition: color 0.3s ease;
-        }
-        
+        button .en-name { display: block; font-size: 0.75em; color: #999; font-weight: 400; transition: color 0.3s ease; }
         button.active { color: #fff; }
         button.active .en-name { color: #ddd; }
         button:active { transform: scale(0.97); }
         
-        .control-wrapper { display: flex; align-items: center; gap: 10px; width: 90%; justify-content: center; }
+        /* ==================== 控件样式 ==================== */
+        .control-wrapper { display: flex; align-items: center; gap: 10px; width: 80%; justify-content: center; }
         .control-wrapper.hidden { display: none; }
         .control-wrapper input[type="range"] { flex-grow: 1; max-width: 400px; cursor: pointer; }
         .control-wrapper input[type="checkbox"] { cursor: pointer; width: 18px; height: 18px; }
-        
-        /* 移动端下拉列表样式 (默认隐藏) */
-        #mobile-selector-wrapper {
-            display: none;
+
+        /* ==================== 响应式设计 - 下拉列表 ==================== */
+        #select-container {
+            display: none; /* 默认隐藏 */
             width: 90%;
-            margin-bottom: 15px;
+            max-width: 400px;
         }
-        #mobile-selector {
+        #sketch-select {
             width: 100%;
             padding: 12px;
             background-color: #2c2c2c;
@@ -88,44 +89,54 @@
             font-size: 16px;
         }
         
-        /* 其他容器 */
+        /* ==================== 其他样式 ==================== */
         #canvas-container { border: 2px solid #444; border-radius: 8px; padding: 5px; background-color: #282828; line-height: 0; margin-bottom: 20px;}
         #code-display-wrapper { width: 100%; max-width: 720px; display: flex; flex-direction: column; align-items: center; }
         #code-display { width: 95%; height: 120px; background-color: #2b2b2b; color: #a9b7c6; border: 1px solid #444; border-radius: 5px; padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 14px; resize: vertical; }
 
-        /* ================================================== */
-        /*              响应式布局媒体查询                    */
-        /* ================================================== */
+        /* ========================================================== */
+        /*                     媒体查询 (小屏幕)                      */
+        /* ========================================================== */
         @media (max-width: 768px) {
-            h1 { font-size: 2em; }
-            #controls-container { gap: 10px; }
-            
-            /* 隐藏桌面端按钮组 */
+            /* 1. 隐藏按钮组，显示下拉列表 */
             #button-container {
                 display: none;
             }
-
-            /* 显示移动端下拉列表 */
-            #mobile-selector-wrapper {
+            #select-container {
                 display: block;
             }
 
-            /* 将控件组排列成一行 */
-            #row-controls-wrapper {
-                display: flex;
-                flex-wrap: wrap; /* 在空间不足时换行 */
+            /* 2. 将控件组改为 Flex 布局，允许换行 */
+            #controls-container {
+                flex-flow: row wrap; /* 改为横向流动，并允许换行 */
                 justify-content: center;
-                gap: 15px;
-                width: 100%;
+                gap: 10px 20px; /* 垂直间距10px, 水平间距20px */
             }
-
             .control-wrapper {
                 width: auto; /* 让宽度自适应内容 */
-                flex-grow: 1; /* 允许伸展 */
+                flex-grow: 1; /* 允许控件伸展以填满空间 */
+                min-width: 280px; /* 保证每个控件不会被挤得太小 */
             }
-            .control-wrapper.hidden { display: none; }
-        }
+            .control-wrapper label {
+                white-space: nowrap; /* 防止标签文字换行 */
+            }
 
+            /* 3. 减小头部高度和字体大小 */
+            header {
+                padding: 5px 0;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            p {
+                font-size: 0.9em;
+            }
+
+            /* 调整画布外边距 */
+            #canvas-container {
+                margin-top: 10px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -136,32 +147,28 @@
     </header>
 
     <div id="controls-container">
-        <!-- 新增: 移动端下拉列表 -->
-        <div id="mobile-selector-wrapper">
-            <select id="mobile-selector"></select>
+        <div class="control-wrapper">
+            <label for="speed-slider">速度乘数:</label>
+            <input type="range" id="speed-slider" min="1" max="2" value="1" step="0.05">
+            <span id="speed-value">1.0x</span>
         </div>
-
-        <!-- 将桌面端控件包裹起来，以便在移动端横向排列 -->
-        <div id="row-controls-wrapper">
-            <div class="control-wrapper">
-                <label for="speed-slider">速度:</label>
-                <input type="range" id="speed-slider" min="1" max="2" value="1" step="0.05">
-                <span id="speed-value">1.0x</span>
-            </div>
-            <div class="control-wrapper">
-                <label for="color-toggle">彩虹:</label>
-                <input type="checkbox" id="color-toggle">
-            </div>
-            <div class="control-wrapper hidden" id="hue-slider-wrapper">
-                <label for="hue-speed-slider">颜色速度:</label>
-                <input type="range" id="hue-speed-slider" min="1" max="10" value="1" step="0.1">
-                <span id="hue-speed-value">1.0</span>
-            </div>
+        <div class="control-wrapper">
+            <label for="color-toggle">启用彩虹模式:</label>
+            <input type="checkbox" id="color-toggle">
+        </div>
+        <div class="control-wrapper hidden" id="hue-slider-wrapper">
+            <label for="hue-speed-slider">颜色速度:</label>
+            <input type="range" id="hue-speed-slider" min="1" max="10" value="1" step="0.1">
+            <span id="hue-speed-value">1.0</span>
         </div>
         
-        <!-- 桌面端按钮组 -->
         <div id="button-container">
             <div id="active-button-background"></div>
+        </div>
+
+        <!-- 新增：用于响应式设计的下拉列表 -->
+        <div id="select-container">
+            <select id="sketch-select"></select>
         </div>
     </div>
 
@@ -181,8 +188,10 @@
         let isColorChangeActive = false;
         let activeSnippetIndex = -1;
         
+        // DOM 元素
         const buttonContainer = document.getElementById('button-container');
         const activeButtonBackground = document.getElementById('active-button-background');
+        const sketchSelect = document.getElementById('sketch-select'); // 获取下拉列表
         const speedSlider = document.getElementById('speed-slider');
         const speedValueLabel = document.getElementById('speed-value');
         const colorToggle = document.getElementById('color-toggle');
@@ -190,23 +199,24 @@
         const hueSpeedSlider = document.getElementById('hue-speed-slider');
         const hueSpeedValueLabel = document.getElementById('hue-speed-value');
         const codeDisplay = document.getElementById('code-display');
-        const mobileSelector = document.getElementById('mobile-selector');
 
         function applyRainbowColors(p, originalBg, originalStroke) {
             p.background(...originalBg);
+
             if (isColorChangeActive) {
                 p.colorMode(p.HSL, 360, 100, 100, 1);
+                
                 const time = p.frameCount * 0.05 * hueSpeedMultiplier;
                 const hue = p.map(p.sin(time), -1, 1, 0, 360);
                 const saturation = p.map(p.cos(time * 0.5), -1, 1, 50, 100);
                 const brightness = p.map(p.sin(time * 0.8), -1, 1, 50, 95);
                 p.stroke(hue, saturation, brightness);
+
             } else {
                 p.colorMode(p.RGB);
                 p.stroke(...originalStroke);
             }
         }
-
 
         const sketches = [
             {
@@ -259,54 +269,43 @@
                 draw: function(p) {
                     p.background(0, 6);
                     const time = p.frameCount * speedMultiplier;
-
                     this.particles = this.particles.map((v, i) => {
-                        if (isColorChangeActive) { p.colorMode(p.HSL, 360, 100, 100, 1); const hue = (p.frameCount * hueSpeedMultiplier + i*0.1) % 360; p.stroke(hue, 90, 70); } 
+                        if (isColorChangeActive) { p.colorMode(p.HSL, 360, 100, 100, 1); const hue=(p.frameCount*hueSpeedMultiplier+i*0.1)%360; p.stroke(hue, 90, 70); } 
                         else { p.colorMode(p.RGB); p.stroke(p.width, 62); }
-                        
-                        let r = 4 + 9 / p.cos(v.mag() * 2 - time / 99);
-                        v.add(p.sin(v.y * r) / (i + 1) * 9, p.cos(r * v.x) / (i + 1) * 9, -v.z / 3);
-                        p.point(v.x, v.y);
-                        
-                        return v.copy().add(3, 3).mult(90);
+                        let r=4+9/p.cos(v.mag()*2-time/99); v.add(p.sin(v.y*r)/(i+1)*9,p.cos(r*v.x)/(i+1)*9,-v.z/3); p.point(v.x,v.y); return v.copy().add(3,3).mult(90);
                     });
-
-                    if (this.particles.length >= 3000) { this.particles = this.particles.slice(-2985); } 
-                    else { const newParticles = [...'#つぶやきProcessing'].map(() => p.createVector(p.random(p.width), p.random(p.height), p.random(-1,1))); this.particles.push(...newParticles); }
+                    if(this.particles.length>=3000){this.particles=this.particles.slice(-2985);}else{const newParticles=[...'#つぶやきProcessing'].map(()=>p.createVector(p.random(p.width),p.random(p.height),p.random(-1,1)));this.particles.push(...newParticles);}
                 }
             }
         ];
 
-        // 事件监听器等其他代码保持不变
+        // 事件监听器
         speedSlider.addEventListener('input', (e) => { speedMultiplier=parseFloat(e.target.value); speedValueLabel.textContent=`${speedMultiplier.toFixed(1)}x`; });
         hueSpeedSlider.addEventListener('input', (e) => { hueSpeedMultiplier=parseFloat(e.target.value); hueSpeedValueLabel.textContent=hueSpeedMultiplier.toFixed(1); });
         colorToggle.addEventListener('change', (e) => { isColorChangeActive=e.target.checked; hueSliderWrapper.classList.toggle('hidden',!isColorChangeActive); });
+        sketchSelect.addEventListener('change', (e) => {
+            const selectedIndex = parseInt(e.target.value);
+            runSketch(sketches[selectedIndex], selectedIndex);
+        });
         
-        // 运行 Sketch 的核心函数
+        // 核心运行函数
         function runSketch(sketchData, index) {
             if (activeSnippetIndex === index && currentSketch) return;
             if (currentSketch) {
                 currentSketch.remove();
             }
             activeSnippetIndex = index;
-            
-            // 更新桌面端和移动端UI
-            updateActiveButton(); 
-            mobileSelector.value = index;
-
+            updateActiveButton();
+            updateActiveSelect();
             codeDisplay.value = sketchData.originalCode;
             currentSketch = new p5((p) => {
-                p.sketchData = {};
-                p.sketchData.originalBg = sketchData.originalBg;
-                p.sketchData.originalStroke = sketchData.originalStroke;
-                p.sketchData.setup = sketchData.setup.bind(p.sketchData);
-                p.sketchData.draw = sketchData.draw.bind(p.sketchData);
+                p.sketchData={}; p.sketchData.originalBg=sketchData.originalBg; p.sketchData.originalStroke=sketchData.originalStroke; p.sketchData.setup=sketchData.setup.bind(p.sketchData); p.sketchData.draw=sketchData.draw.bind(p.sketchData);
                 p.setup = () => { p.sketchData.setup(p); };
                 p.draw = () => { p.sketchData.draw(p); };
             }, 'canvas-container');
         }
 
-        // 更新按钮 UI 的核心函数
+        // 更新按钮UI
         function updateActiveButton() {
             const allButtons = buttonContainer.querySelectorAll('button');
             allButtons.forEach((button, i) => {
@@ -314,41 +313,35 @@
             });
             const activeButton = allButtons[activeSnippetIndex];
             if (activeButton) {
-                const top = activeButton.offsetTop;
-                const left = activeButton.offsetLeft;
-                const width = activeButton.offsetWidth;
-                const height = activeButton.offsetHeight;
+                const top = activeButton.offsetTop; const left = activeButton.offsetLeft; const width = activeButton.offsetWidth; const height = activeButton.offsetHeight;
                 activeButtonBackground.style.setProperty('--top', `${top}px`);
                 activeButtonBackground.style.setProperty('--left', `${left}px`);
                 activeButtonBackground.style.setProperty('--width', `${width}px`);
                 activeButtonBackground.style.setProperty('--height', `${height}px`);
             }
         }
-        
-        // ==================================================
-        //             初始化桌面按钮和移动下拉列表
-        // ==================================================
+
+        // 更新下拉列表的选中项
+        function updateActiveSelect() {
+            sketchSelect.value = activeSnippetIndex;
+        }
+
+        // 创建UI元素
         sketches.forEach((sketchData, index) => {
-            // 创建桌面按钮
+            // 创建按钮
             const button = document.createElement('button');
             button.innerHTML = `${sketchData.name}<span class="en-name">${sketchData.enName}</span>`;
             button.addEventListener('click', () => runSketch(sketchData, index));
             buttonContainer.appendChild(button);
 
-            // 创建移动下拉列表选项
+            // 创建下拉列表选项
             const option = document.createElement('option');
             option.value = index;
             option.textContent = `${sketchData.name} / ${sketchData.enName}`;
-            mobileSelector.appendChild(option);
+            sketchSelect.appendChild(option);
         });
 
-        // 为移动下拉列表添加事件监听
-        mobileSelector.addEventListener('change', (e) => {
-            const selectedIndex = parseInt(e.target.value, 10);
-            runSketch(sketches[selectedIndex], selectedIndex);
-        });
-
-
+        // 初始加载
         if (sketches.length > 0) {
             activeSnippetIndex = 0;
             requestAnimationFrame(() => {
