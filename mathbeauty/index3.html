@@ -54,40 +54,23 @@
             text-align: center;
         }
 
-        button .en-name {
-            display: block;
-            font-size: 0.75em;
-            color: #999;
-            font-weight: 400;
-            transition: color 0.3s ease;
-        }
+        button .en-name { display: block; font-size: 0.75em; color: #999; font-weight: 400; transition: color 0.3s ease; }
+        button.active { color: #fff; }
+        button.active .en-name { color: #ddd; }
+        button:active { transform: scale(0.97); }
         
-        button.active {
-            color: #fff;
-        }
-
-        button.active .en-name {
-            color: #ddd;
-        }
-
-        button:active {
-            transform: scale(0.97);
-        }
-        
-        .control-wrapper { display: flex; align-items: center; gap: 10px; width: 80%; justify-content: center; }
+        .control-wrapper { display: flex; align-items: center; gap: 10px; width: 90%; max-width: 500px; justify-content: center; }
         .control-wrapper.hidden { display: none; }
-        .control-wrapper input[type="range"] { flex-grow: 1; max-width: 400px; cursor: pointer; }
+        .control-wrapper label { flex-shrink: 0; } /* 防止标签被压缩 */
+        .control-wrapper input[type="range"] { flex-grow: 1; min-width: 50px; }
         .control-wrapper input[type="checkbox"] { cursor: pointer; width: 18px; height: 18px; }
-        #canvas-container { border: 2px solid #444; border-radius: 8px; padding: 5px; background-color: #282828; line-height: 0; margin-bottom: 20px;}
         
+        #canvas-container { border: 2px solid #444; border-radius: 8px; padding: 5px; background-color: #282828; line-height: 0; margin-bottom: 20px;}
         #code-display-wrapper { width: 100%; max-width: 720px; display: flex; flex-direction: column; align-items: center; }
         #code-display { width: 95%; height: 120px; background-color: #2b2b2b; color: #a9b7c6; border: 1px solid #444; border-radius: 5px; padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 14px; resize: vertical; }
 
-        /* ================================================== */
-        /*              响应式设计：下拉列表                  */
-        /* ================================================== */
         #sketch-select {
-            display: none; /* 默认隐藏 */
+            display: none;
             width: 80%;
             max-width: 400px;
             padding: 12px;
@@ -96,7 +79,7 @@
             color: #fff;
             border: 1px solid #444;
             border-radius: 8px;
-            -webkit-appearance: none; /* 移除iOS默认样式 */
+            -webkit-appearance: none;
             appearance: none;
             background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23CCCCCC%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E');
             background-repeat: no-repeat;
@@ -104,17 +87,33 @@
             background-size: .65em auto;
         }
 
-        /* 媒体查询：当屏幕宽度小于等于 768px 时 */
+        /* ================================================== */
+        /*              响应式设计：小屏幕布局                */
+        /* ================================================== */
         @media (max-width: 768px) {
-            #button-container {
-                display: none; /* 隐藏按钮组 */
+            h1 { font-size: 2em; }
+            #button-container { display: none; }
+            #sketch-select { display: block; }
+            
+            /* 将控制项包装器改为 Flex 布局 */
+            #main-controls-wrapper {
+                display: flex;
+                flex-wrap: wrap; /* 允许换行 */
+                justify-content: center;
+                align-items: center;
+                gap: 15px;
+                width: 100%;
             }
-            #sketch-select {
-                display: block; /* 显示下拉列表 */
+            .control-wrapper {
+                width: auto; /* 取消固定宽度 */
+                gap: 5px; /* 缩小间距 */
             }
-             h1 { font-size: 2em; } /* 在小屏幕上缩小标题 */
+            .control-wrapper.hidden { display: none !important; } /* 确保隐藏生效 */
+            /* 隐藏滑轨旁边的数值显示 */
+            #speed-value, #hue-speed-value {
+                display: none;
+            }
         }
-
     </style>
 </head>
 <body>
@@ -125,29 +124,29 @@
     </header>
 
     <div id="controls-container">
-        <div class="control-wrapper">
-            <label for="speed-slider">速度乘数:</label>
-            <input type="range" id="speed-slider" min="1" max="2" value="1" step="0.05">
-            <span id="speed-value">1.0x</span>
-        </div>
-        <div class="control-wrapper">
-            <label for="color-toggle">启用彩虹模式:</label>
-            <input type="checkbox" id="color-toggle">
-        </div>
-        <div class="control-wrapper hidden" id="hue-slider-wrapper">
-            <label for="hue-speed-slider">颜色速度:</label>
-            <input type="range" id="hue-speed-slider" min="1" max="10" value="1" step="0.1">
-            <span id="hue-speed-value">1.0</span>
+        <!-- 新增：主控制项的包装器 -->
+        <div id="main-controls-wrapper">
+            <div class="control-wrapper">
+                <label for="speed-slider" class="short-label">速度</label>
+                <input type="range" id="speed-slider" min="1" max="2" value="1" step="0.05">
+                <span id="speed-value">1.0x</span>
+            </div>
+            <div class="control-wrapper">
+                <label for="color-toggle" class="short-label">彩虹</label>
+                <input type="checkbox" id="color-toggle">
+            </div>
+            <div class="control-wrapper hidden" id="hue-slider-wrapper">
+                <label for="hue-speed-slider" class="short-label">颜色</label>
+                <input type="range" id="hue-speed-slider" min="1" max="10" value="1" step="0.1">
+                <span id="hue-speed-value">1.0</span>
+            </div>
         </div>
         
-        <!-- 按钮组 -->
         <div id="button-container">
             <div id="active-button-background"></div>
         </div>
         
-        <!-- 新增：下拉列表 -->
         <select id="sketch-select"></select>
-
     </div>
 
     <div id="canvas-container"></div>
@@ -166,10 +165,9 @@
         let isColorChangeActive = false;
         let activeSnippetIndex = -1;
         
-        // DOM 元素
         const buttonContainer = document.getElementById('button-container');
         const activeButtonBackground = document.getElementById('active-button-background');
-        const sketchSelect = document.getElementById('sketch-select'); // 获取下拉列表
+        const sketchSelect = document.getElementById('sketch-select');
         const speedSlider = document.getElementById('speed-slider');
         const speedValueLabel = document.getElementById('speed-value');
         const colorToggle = document.getElementById('color-toggle');
@@ -228,24 +226,11 @@
                 draw: function(p) { p.background(0); const s=p.PI/30; for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){if(isColorChangeActive){p.colorMode(p.HSL,360,100,100);const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;const hue=p.map(p.sin(time),-1,1,0,360);const sat=p.map(p.cos(time*0.5),-1,1,50,100);p.stroke(hue,sat,75);}else{p.colorMode(p.RGB);p.stroke(j*50);} const getCoords=([u,v])=>{let e=p.pow(v,3)*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)];};p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));}} }
             },
             {
-                name: "星尘回响", enName: "Stardust Echo",
-                originalCode: `$= [],draw=_=>{$[0]??createCanvas(w=540,w);background(0,6);$=$.map((v,i)=>stroke(w,62).point(v.add(sin(v.y*(r=4+9/cos(v.mag()*2-frameCount/99)))/i*9,cos(r*v.x)/i*9,-v.z/3).copy().add(3,3).mult(90)))[3e3]?$.slice(-2985):[...$,...[...'#つぶやきProcessing'].map(p5.Vector.random3D)]}`,
-                originalBg: [0, 6], originalStroke: [540, 62],
-                setup: function(p) { p.createCanvas(540, 540); this.particles = []; },
-                draw: function(p) {
-                    p.background(0, 6);
-                    const time = p.frameCount * speedMultiplier;
-                    this.particles = this.particles.map((v, i) => {
-                        if (isColorChangeActive) { p.colorMode(p.HSL, 360, 100, 100, 1); const hue = (p.frameCount * hueSpeedMultiplier + i*0.1) % 360; p.stroke(hue, 90, 70); } 
-                        else { p.colorMode(p.RGB); p.stroke(p.width, 62); }
-                        let r = 4 + 9 / p.cos(v.mag() * 2 - time / 99);
-                        v.add(p.sin(v.y * r) / (i + 1) * 9, p.cos(r * v.x) / (i + 1) * 9, -v.z / 3);
-                        p.point(v.x, v.y);
-                        return v.copy().add(3, 3).mult(90);
-                    });
-                    if (this.particles.length < 3000) { const newParticles = [...'#p5js'].map(() => p.createVector(p.random(p.width), p.random(p.height), p.random(-1,1))); this.particles.push(...newParticles); } 
-                    else { this.particles = this.particles.slice(-2985); }
-                }
+                name: "幻光粒子", enName: "Phantom Particles",
+                originalCode: `$= [],t=0,draw=_=>{t++||createCanvas(720,720);background(0,9);($=[...$.slice(-5e3),...[...].map(_=>p5.Vector.random3D().add(3.6,2).mult(99))]).map(v=>stroke(49*(k=sqrt(5+(cos(v.y/33+t/240)*19^19*sin(v.x/33))))).point(v.add(sin((r=(k&4)/25)*v.y),cos(v.x*r))))}`,
+                originalBg: [0, 9], originalStroke: [255],
+                setup: function(p) { p.createCanvas(720, 720); this.particles = []; this.t = 0; },
+                draw: function(p) { p.background(0, 9); this.t++; const time=this.t*speedMultiplier; if(this.particles.length<5000){const newParticles=[...'p5js'].map(()=>p.createVector(p.random(-1,1),p.random(-1,1),p.random(-1,1)).add(3.6,2).mult(99));this.particles.push(...newParticles);} this.particles.forEach(v=>{let power=1.9;let k=p.sqrt(5+(p.cos(v.y/33+time/240)*power*p.sin(v.x/33)));let r=(p.floor(k)&4)/25;if(isColorChangeActive){p.colorMode(p.HSL,360,100,100,1);const hue=(k*40+p.frameCount*hueSpeedMultiplier)%360;p.stroke(hue,90,70,0.5);}else{p.colorMode(p.RGB);p.stroke(49*k);} v.add(p.sin(r*v.y),p.cos(v.x*r));p.point(v.x,v.y);});}
             }
         ];
 
@@ -273,9 +258,7 @@
             }, 'canvas-container');
         }
 
-        // ******** 更新的 UI 逻辑 ********
         function updateActiveButton() {
-            // 更新按钮组（大屏幕）
             const allButtons = buttonContainer.querySelectorAll('button');
             allButtons.forEach((button, i) => {
                 button.classList.toggle('active', i === activeSnippetIndex);
@@ -291,26 +274,21 @@
                 activeButtonBackground.style.setProperty('--width', `${width}px`);
                 activeButtonBackground.style.setProperty('--height', `${height}px`);
             }
-            // 更新下拉列表（小屏幕）
             sketchSelect.selectedIndex = activeSnippetIndex;
         }
         
-        // ******** 初始化UI元素 ********
         sketches.forEach((sketchData, index) => {
-            // 创建按钮
             const button = document.createElement('button');
             button.innerHTML = `${sketchData.name}<span class="en-name">${sketchData.enName}</span>`;
             button.addEventListener('click', () => runSketch(sketchData, index));
             buttonContainer.appendChild(button);
 
-            // 创建下拉列表选项
             const option = document.createElement('option');
             option.value = index;
             option.textContent = `${sketchData.name} / ${sketchData.enName}`;
             sketchSelect.appendChild(option);
         });
         
-        // 为下拉列表添加事件监听
         sketchSelect.addEventListener('change', (e) => {
             const selectedIndex = parseInt(e.target.value, 10);
             runSketch(sketches[selectedIndex], selectedIndex);
