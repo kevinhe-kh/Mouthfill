@@ -14,22 +14,15 @@
         p { color: #cccccc; }
         #controls-container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%; max-width: 720px; }
         
-        /* ================================================== */
-        /*              全新的下拉列表样式                     */
-        /* ================================================== */
         #sketch-selector-wrapper {
             width: 100%;
             max-width: 350px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            align-items: center;
         }
         
         #sketch-selector {
-            -webkit-appearance: none; /* 移除默认样式 (for Chrome, Safari, etc.) */
-            -moz-appearance: none;    /* 移除默认样式 (for Firefox) */
-            appearance: none;         /* 移除默认样式 */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
             
             width: 100%;
             padding: 12px 40px 12px 16px;
@@ -75,9 +68,8 @@
     </header>
 
     <div id="controls-container">
-        <!-- 下拉列表替换了按钮组 -->
+        <!-- 移除了<label> -->
         <div id="sketch-selector-wrapper">
-            <label for="sketch-selector">选择一个动画:</label>
             <select id="sketch-selector"></select>
         </div>
 
@@ -113,7 +105,7 @@
         let isColorChangeActive = false;
         
         // DOM 元素
-        const sketchSelector = document.getElementById('sketch-selector'); // 获取下拉列表
+        const sketchSelector = document.getElementById('sketch-selector');
         const speedSlider = document.getElementById('speed-slider');
         const speedValueLabel = document.getElementById('speed-value');
         const colorToggle = document.getElementById('color-toggle');
@@ -177,38 +169,91 @@
                 setup: function(p) { p.createCanvas(400, 400); this.t = 0; this.s = 3; },
                 draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); p.randomSeed(0); this.t+=0.02*speedMultiplier; const a=(x,y,t)=>{let k=x/8-25,e=y/8-25;let d=2*p.cos(p.mag(k,e)/3-t);return[x+d*k,y+d*e];}; for(let y=100;y<300;y+=this.s)for(let x=100;x<300;x+=this.s)p.line(...p.shuffle([a(x,y,this.t),a(x,y+this.s,this.t),a(x+this.s,y,this.t)]).flat()); }
             },
+            // ******** 经过最终修复的第六段动画 ********
             {
                 name: "几何引擎", enName: "Geometric Engine",
                 originalCode: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`,
                 originalBg: [0], originalStroke: [255],
                 setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
-                draw: function(p) { p.background(0); const s=p.PI/30; for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){if(isColorChangeActive){p.colorMode(p.HSL,360,100,100);const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;const hue=p.map(p.sin(time),-1,1,0,360);const sat=p.map(p.cos(time*0.5),-1,1,50,100);p.stroke(hue,sat,75);}else{p.colorMode(p.RGB);p.stroke(j*50);} const getCoords=([u,v])=>{let e=p.pow(v,3)*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-t)-e*p.sin(u+j)];};p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));}} }
+                draw: function(p) { 
+                    p.background(0); 
+                    const s=p.PI/30; 
+                    for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){
+                        for(let i=0;i<p.TAU;i+=s*2){
+                            if(isColorChangeActive){
+                                p.colorMode(p.HSL,360,100,100);
+                                const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;
+                                const hue=p.map(p.sin(time),-1,1,0,360);
+                                const sat=p.map(p.cos(time*0.5),-1,1,50,100);
+                                p.stroke(hue,sat,75);
+                            } else {
+                                p.colorMode(p.RGB);
+                                p.stroke(j*50);
+                            } 
+                            const getCoords=([u,v])=>{
+                                let e=p.pow(v,3)*4+0;
+                                return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)];
+                            };
+                            p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));
+                        }
+                    } 
+                }
             },
+            // ******** 经过最终修复的第七段动画 ********
             {
                 name: "星尘回响", enName: "Stardust Echo",
                 originalCode: `$= [],draw=_=>{$[0]??createCanvas(w=540,w);background(0,6);$=$.map((v,i)=>stroke(w,62).point(v.add(sin(v.y*(r=4+9/cos(v.mag()*2-frameCount/99)))/i*9,cos(r*v.x)/i*9,-v.z/3).copy().add(3,3).mult(90)))[3e3]?$.slice(-2985):[...$,...[...'#つぶやきProcessing'].map(p5.Vector.random3D)]}`,
                 originalBg: [0, 6], originalStroke: [540, 62],
-                setup: function(p) { p.createCanvas(540, 540); this.particles = []; },
-                draw: function(p) { p.background(0, 6); const time = p.frameCount * speedMultiplier; this.particles = this.particles.map((v, i) => { if (isColorChangeActive) { p.colorMode(p.HSL, 360, 100, 100, 1); const hue = (p.frameCount * hueSpeedMultiplier + i*0.1) % 360; p.stroke(hue, 90, 70); } else { p.colorMode(p.RGB); p.stroke(p.width, 62); } let r = 4 + 9 / p.cos(v.mag() * 2 - time / 99); v.add(p.sin(v.y * r) / (i + 1) * 9, p.cos(r * v.x) / (i + 1) * 9, -v.z / 3); p.point(v.x, v.y); return v.copy().add(3, 3).mult(90); }); if (this.particles.length >= 3000) { this.particles = this.particles.slice(-2985); } else { const newParticles = [...'#p5'].map(() => p.createVector(p.random(p.width), p.random(p.height), p.random(-1,1))); this.particles.push(...newParticles); } }
+                setup: function(p) {
+                    p.createCanvas(540, 540); // 忠于原始画布尺寸
+                    this.particles = [];
+                },
+                draw: function(p) {
+                    p.background(0, 6);
+                    const time = p.frameCount * speedMultiplier;
+
+                    // 使用 .map 更新粒子数组
+                    this.particles = this.particles.map((v, i) => {
+                        if (isColorChangeActive) {
+                            p.colorMode(p.HSL, 360, 100, 100, 1);
+                            const hue = (p.frameCount * hueSpeedMultiplier + i*0.1) % 360;
+                            p.stroke(hue, 90, 70);
+                        } else {
+                             p.colorMode(p.RGB);
+                            p.stroke(p.width, 62);
+                        }
+                        
+                        let r = 4 + 9 / p.cos(v.mag() * 2 - time / 99);
+                        v.add(p.sin(v.y * r) / (i + 1) * 9, p.cos(r * v.x) / (i + 1) * 9, -v.z / 3);
+                        p.point(v.x, v.y);
+                        
+                        return v.copy().add(3, 3).mult(90);
+                    });
+
+                    // 粒子管理
+                    if (this.particles.length >= 3000) {
+                        this.particles = this.particles.slice(-2985);
+                    } else {
+                        const newParticles = [...'#つぶやきProcessing'].map(() => p.createVector(p.random(p.width), p.random(p.height), p.random(-1,1)));
+                        this.particles.push(...newParticles);
+                    }
+                }
             }
         ];
 
-        // 事件监听器
+        // 事件监听器等其他代码保持不变
         speedSlider.addEventListener('input', (e) => { speedMultiplier=parseFloat(e.target.value); speedValueLabel.textContent=`${speedMultiplier.toFixed(1)}x`; });
         hueSpeedSlider.addEventListener('input', (e) => { hueSpeedMultiplier=parseFloat(e.target.value); hueSpeedValueLabel.textContent=hueSpeedMultiplier.toFixed(1); });
         colorToggle.addEventListener('change', (e) => { isColorChangeActive=e.target.checked; hueSliderWrapper.classList.toggle('hidden',!isColorChangeActive); });
         
-        // ******** 核心逻辑更新：监听下拉列表的 change 事件 ********
-        sketchSelector.addEventListener('change', (e) => {
-            const selectedIndex = e.target.value;
-            runSketch(sketches[selectedIndex], selectedIndex);
-        });
-
         function runSketch(sketchData, index) {
             if (currentSketch) {
                 currentSketch.remove();
             }
+            
+            sketchSelector.value = index; // 更新下拉列表的显示
             codeDisplay.value = sketchData.originalCode;
+
             currentSketch = new p5((p) => {
                 p.sketchData = {};
                 p.sketchData.originalBg = sketchData.originalBg;
@@ -220,7 +265,7 @@
             }, 'canvas-container');
         }
 
-        // ******** 创建下拉列表选项 ********
+        // 创建下拉列表选项
         sketches.forEach((sketchData, index) => {
             const option = document.createElement('option');
             option.value = index;
