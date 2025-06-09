@@ -62,42 +62,18 @@
             transition: color 0.3s ease;
         }
         
-        button.active { color: #fff; }
-        button.active .en-name { color: #ddd; }
-        button:active { transform: scale(0.97); }
-        
-        /* 新增：下拉列表样式 */
-        #dropdown-container {
-            display: none; /* 默认隐藏 */
-            width: 90%;
-            max-width: 400px;
-        }
-        #sketch-select {
-            width: 100%;
-            padding: 12px;
-            background-color: #2c2c2c;
-            color: #f0f0f0;
-            border: 1px solid #444;
-            border-radius: 8px;
-            font-size: 16px;
-            -webkit-appearance: none; /* 移除默认样式 */
-            appearance: none;
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23CCCCCC%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.4-12.8z%22%2F%3E%3C%2Fsvg%3E');
-            background-repeat: no-repeat;
-            background-position: right 1em top 50%;
-            background-size: .65em auto;
-        }
-        
-        /* 新增：媒体查询，用于响应式切换 */
-        @media (max-width: 680px) {
-            #button-container {
-                display: none; /* 在小屏幕上隐藏按钮组 */
-            }
-            #dropdown-container {
-                display: block; /* 在小屏幕上显示下拉列表 */
-            }
+        button.active {
+            color: #fff;
         }
 
+        button.active .en-name {
+            color: #ddd;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+        
         .control-wrapper { display: flex; align-items: center; gap: 10px; width: 80%; justify-content: center; }
         .control-wrapper.hidden { display: none; }
         .control-wrapper input[type="range"] { flex-grow: 1; max-width: 400px; cursor: pointer; }
@@ -106,6 +82,39 @@
         
         #code-display-wrapper { width: 100%; max-width: 720px; display: flex; flex-direction: column; align-items: center; }
         #code-display { width: 95%; height: 120px; background-color: #2b2b2b; color: #a9b7c6; border: 1px solid #444; border-radius: 5px; padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 14px; resize: vertical; }
+
+        /* ================================================== */
+        /*              响应式设计：下拉列表                  */
+        /* ================================================== */
+        #sketch-select {
+            display: none; /* 默认隐藏 */
+            width: 80%;
+            max-width: 400px;
+            padding: 12px;
+            font-size: 16px;
+            background-color: #2c2c2c;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 8px;
+            -webkit-appearance: none; /* 移除iOS默认样式 */
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23CCCCCC%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22/%3E%3C/svg%3E');
+            background-repeat: no-repeat;
+            background-position: right 1em top 50%;
+            background-size: .65em auto;
+        }
+
+        /* 媒体查询：当屏幕宽度小于等于 768px 时 */
+        @media (max-width: 768px) {
+            #button-container {
+                display: none; /* 隐藏按钮组 */
+            }
+            #sketch-select {
+                display: block; /* 显示下拉列表 */
+            }
+             h1 { font-size: 2em; } /* 在小屏幕上缩小标题 */
+        }
+
     </style>
 </head>
 <body>
@@ -131,15 +140,14 @@
             <span id="hue-speed-value">1.0</span>
         </div>
         
-        <!-- 按钮容器 -->
+        <!-- 按钮组 -->
         <div id="button-container">
             <div id="active-button-background"></div>
         </div>
         
-        <!-- 下拉列表容器 (默认隐藏) -->
-        <div id="dropdown-container">
-            <select id="sketch-select"></select>
-        </div>
+        <!-- 新增：下拉列表 -->
+        <select id="sketch-select"></select>
+
     </div>
 
     <div id="canvas-container"></div>
@@ -158,6 +166,7 @@
         let isColorChangeActive = false;
         let activeSnippetIndex = -1;
         
+        // DOM 元素
         const buttonContainer = document.getElementById('button-container');
         const activeButtonBackground = document.getElementById('active-button-background');
         const sketchSelect = document.getElementById('sketch-select'); // 获取下拉列表
@@ -171,22 +180,9 @@
 
         function applyRainbowColors(p, originalBg, originalStroke) {
             p.background(...originalBg);
-
-            if (isColorChangeActive) {
-                p.colorMode(p.HSL, 360, 100, 100, 1);
-                
-                const time = p.frameCount * 0.05 * hueSpeedMultiplier;
-                const hue = p.map(p.sin(time), -1, 1, 0, 360);
-                const saturation = p.map(p.cos(time * 0.5), -1, 1, 50, 100);
-                const brightness = p.map(p.sin(time * 0.8), -1, 1, 50, 95);
-                p.stroke(hue, saturation, brightness);
-
-            } else {
-                p.colorMode(p.RGB);
-                p.stroke(...originalStroke);
-            }
+            if (isColorChangeActive) { p.colorMode(p.HSL, 360, 100, 100, 1); const time = p.frameCount * 0.05 * hueSpeedMultiplier; const hue = p.map(p.sin(time), -1, 1, 0, 360); const saturation = p.map(p.cos(time * 0.5), -1, 1, 50, 100); const brightness = p.map(p.sin(time * 0.8), -1, 1, 50, 95); p.stroke(hue, saturation, brightness); } 
+            else { p.colorMode(p.RGB); p.stroke(...originalStroke); }
         }
-
 
         const sketches = [
             {
@@ -229,14 +225,27 @@
                 originalCode: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`,
                 originalBg: [0], originalStroke: [255],
                 setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
-                draw: function(p) { p.background(0); const s=p.PI/30; for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){if(isColorChangeActive){p.colorMode(p.HSL,360,100,100);const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;const hue=p.map(p.sin(time),-1,1,0,360);const sat=p.map(p.cos(time*0.5),-1,1,50,100);p.stroke(hue,sat,75);}else{p.colorMode(p.RGB);p.stroke(j*50);} const getCoords=([u,v])=>{let e=p.pow(v,3)*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-t)-e*p.sin(u+j)];};p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));}} }
+                draw: function(p) { p.background(0); const s=p.PI/30; for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){if(isColorChangeActive){p.colorMode(p.HSL,360,100,100);const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;const hue=p.map(p.sin(time),-1,1,0,360);const sat=p.map(p.cos(time*0.5),-1,1,50,100);p.stroke(hue,sat,75);}else{p.colorMode(p.RGB);p.stroke(j*50);} const getCoords=([u,v])=>{let e=p.pow(v,3)*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)];};p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));}} }
             },
             {
                 name: "星尘回响", enName: "Stardust Echo",
                 originalCode: `$= [],draw=_=>{$[0]??createCanvas(w=540,w);background(0,6);$=$.map((v,i)=>stroke(w,62).point(v.add(sin(v.y*(r=4+9/cos(v.mag()*2-frameCount/99)))/i*9,cos(r*v.x)/i*9,-v.z/3).copy().add(3,3).mult(90)))[3e3]?$.slice(-2985):[...$,...[...'#つぶやきProcessing'].map(p5.Vector.random3D)]}`,
                 originalBg: [0, 6], originalStroke: [540, 62],
                 setup: function(p) { p.createCanvas(540, 540); this.particles = []; },
-                draw: function(p) { p.background(0, 6); const time = p.frameCount * speedMultiplier; this.particles = this.particles.map((v, i) => { if (isColorChangeActive) { p.colorMode(p.HSL, 360, 100, 100, 1); const hue = (p.frameCount * hueSpeedMultiplier + i*0.1) % 360; p.stroke(hue, 90, 70); } else { p.colorMode(p.RGB); p.stroke(p.width, 62); } let r = 4 + 9 / p.cos(v.mag() * 2 - time / 99); v.add(p.sin(v.y * r) / (i + 1) * 9, p.cos(r * v.x) / (i + 1) * 9, -v.z / 3); p.point(v.x, v.y); return v.copy().add(3, 3).mult(90); }); if (this.particles.length >= 3000) { this.particles = this.particles.slice(-2985); } else { const newParticles = [...'#p5.js'].map(() => p.createVector(p.random(p.width), p.random(p.height), p.random(-1,1))); this.particles.push(...newParticles); } }
+                draw: function(p) {
+                    p.background(0, 6);
+                    const time = p.frameCount * speedMultiplier;
+                    this.particles = this.particles.map((v, i) => {
+                        if (isColorChangeActive) { p.colorMode(p.HSL, 360, 100, 100, 1); const hue = (p.frameCount * hueSpeedMultiplier + i*0.1) % 360; p.stroke(hue, 90, 70); } 
+                        else { p.colorMode(p.RGB); p.stroke(p.width, 62); }
+                        let r = 4 + 9 / p.cos(v.mag() * 2 - time / 99);
+                        v.add(p.sin(v.y * r) / (i + 1) * 9, p.cos(r * v.x) / (i + 1) * 9, -v.z / 3);
+                        p.point(v.x, v.y);
+                        return v.copy().add(3, 3).mult(90);
+                    });
+                    if (this.particles.length < 3000) { const newParticles = [...'#p5js'].map(() => p.createVector(p.random(p.width), p.random(p.height), p.random(-1,1))); this.particles.push(...newParticles); } 
+                    else { this.particles = this.particles.slice(-2985); }
+                }
             }
         ];
 
@@ -245,12 +254,6 @@
         hueSpeedSlider.addEventListener('input', (e) => { hueSpeedMultiplier=parseFloat(e.target.value); hueSpeedValueLabel.textContent=hueSpeedMultiplier.toFixed(1); });
         colorToggle.addEventListener('change', (e) => { isColorChangeActive=e.target.checked; hueSliderWrapper.classList.toggle('hidden',!isColorChangeActive); });
         
-        // 新增：下拉列表的事件监听
-        sketchSelect.addEventListener('change', (e) => {
-            const selectedIndex = parseInt(e.target.value, 10);
-            runSketch(sketches[selectedIndex], selectedIndex);
-        });
-
         function runSketch(sketchData, index) {
             if (activeSnippetIndex === index && currentSketch) return;
             if (currentSketch) {
@@ -258,10 +261,7 @@
             }
             activeSnippetIndex = index;
             updateActiveButton();
-            updateDropdown();
-            
             codeDisplay.value = sketchData.originalCode;
-
             currentSketch = new p5((p) => {
                 p.sketchData = {};
                 p.sketchData.originalBg = sketchData.originalBg;
@@ -273,8 +273,9 @@
             }, 'canvas-container');
         }
 
-        // 更新按钮和下拉列表的UI
+        // ******** 更新的 UI 逻辑 ********
         function updateActiveButton() {
+            // 更新按钮组（大屏幕）
             const allButtons = buttonContainer.querySelectorAll('button');
             allButtons.forEach((button, i) => {
                 button.classList.toggle('active', i === activeSnippetIndex);
@@ -290,28 +291,31 @@
                 activeButtonBackground.style.setProperty('--width', `${width}px`);
                 activeButtonBackground.style.setProperty('--height', `${height}px`);
             }
+            // 更新下拉列表（小屏幕）
+            sketchSelect.selectedIndex = activeSnippetIndex;
         }
         
-        function updateDropdown() {
-            sketchSelect.value = activeSnippetIndex;
-        }
-
-        // 同时创建按钮和下拉列表选项
+        // ******** 初始化UI元素 ********
         sketches.forEach((sketchData, index) => {
             // 创建按钮
             const button = document.createElement('button');
             button.innerHTML = `${sketchData.name}<span class="en-name">${sketchData.enName}</span>`;
             button.addEventListener('click', () => runSketch(sketchData, index));
             buttonContainer.appendChild(button);
-            
+
             // 创建下拉列表选项
             const option = document.createElement('option');
             option.value = index;
             option.textContent = `${sketchData.name} / ${sketchData.enName}`;
             sketchSelect.appendChild(option);
         });
+        
+        // 为下拉列表添加事件监听
+        sketchSelect.addEventListener('change', (e) => {
+            const selectedIndex = parseInt(e.target.value, 10);
+            runSketch(sketches[selectedIndex], selectedIndex);
+        });
 
-        // 自动运行第一个动画
         if (sketches.length > 0) {
             activeSnippetIndex = 0;
             requestAnimationFrame(() => {
