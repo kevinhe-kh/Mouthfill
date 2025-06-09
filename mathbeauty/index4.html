@@ -202,10 +202,10 @@
             },
             {
                 name: "幻光粒子", enName: "Phantom Particles",
-                originalCode: `$= [],t=0,draw=_=>{t++||createCanvas(720,720);background(0,9);($=[...$.slice(-5e3),...[...].map(_=>p5.Vector.random3D().add(3.6,2).mult(99))]).map(v=>stroke(49*(k=sqrt(5+(cos(v.y/33+t/240)*19^19*sin(v.x/33))))).point(v.add(sin((r=(k&4)/25)*v.y),cos(v.x*r))))}`,
+                originalCode: `t=0,draw=_=>{t++||createCanvas(720,720);background(0,9);($=[...$.slice(-5e3),...[...].map(_=>p5.Vector.random3D().add(3.6,2).mult(99))]).map(v=>stroke(49*(k=sqrt(5+(cos(v.y/33+t/240)*19^19*sin(v.x/33))))).point(v.add(sin((r=(k&4)/25)*v.y),cos(v.x*r))))}`,
                 originalBg: [0, 9], originalStroke: [255],
                 setup: function(p) {
-                    p.createCanvas(720, 720); // 忠于原始画布尺寸
+                    p.createCanvas(400,400); // 忠于原始画布尺寸
                     this.particles = [];
                     this.t = 0;
                 },
