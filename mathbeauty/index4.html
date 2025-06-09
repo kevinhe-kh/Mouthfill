@@ -9,11 +9,12 @@
 
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #1a1a1a; color: #f0f0f0; display: flex; flex-direction: column; align-items: center; margin: 0; padding: 20px; }
-        header { text-align: center; margin-bottom: 20px; }
+        header { text-align: center; margin-bottom: 20px; transition: all 0.3s ease; }
         h1 { margin: 0; color: #ffffff; font-size: 2.5em; letter-spacing: 2px; }
-        p { color: #cccccc; }
+        p { color: #cccccc; margin-top: 8px; }
         #controls-container { display: flex; flex-direction: column; align-items: center; gap: 15px; margin-bottom: 20px; width: 100%; max-width: 720px; }
         
+        /* 大屏幕按钮样式 */
         #button-container {
             position: relative;
             display: flex;
@@ -25,7 +26,6 @@
             border-radius: 12px;
             border: 1px solid #444;
         }
-
         #active-button-background {
             position: absolute;
             background-color: #4CAF50;
@@ -37,51 +37,84 @@
             width: var(--width, 0px);
             height: var(--height, 0px);
         }
-
         button {
-            position: relative;
-            z-index: 1;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            background-color: transparent;
-            color: #ccc;
-            border: none;
-            border-radius: 8px;
-            transition: color 0.3s ease, transform 0.1s ease;
-            line-height: 1.3;
-            text-align: center;
+            position: relative; z-index: 1; padding: 10px 20px; font-size: 16px; font-weight: 500; cursor: pointer; background-color: transparent; color: #ccc; border: none; border-radius: 8px; transition: color 0.3s ease, transform 0.1s ease; line-height: 1.3; text-align: center;
         }
-
-        button .en-name {
-            display: block;
-            font-size: 0.75em;
-            color: #999;
-            font-weight: 400;
-            transition: color 0.3s ease;
-        }
-        
-        button.active {
-            color: #fff;
-        }
-
-        button.active .en-name {
-            color: #ddd;
-        }
-
-        button:active {
-            transform: scale(0.97);
-        }
+        button .en-name { display: block; font-size: 0.75em; color: #999; font-weight: 400; transition: color 0.3s ease; }
+        button.active { color: #fff; }
+        button.active .en-name { color: #ddd; }
+        button:active { transform: scale(0.97); }
         
         .control-wrapper { display: flex; align-items: center; gap: 10px; width: 80%; justify-content: center; }
         .control-wrapper.hidden { display: none; }
         .control-wrapper input[type="range"] { flex-grow: 1; max-width: 400px; cursor: pointer; }
         .control-wrapper input[type="checkbox"] { cursor: pointer; width: 18px; height: 18px; }
-        #canvas-container { border: 2px solid #444; border-radius: 8px; padding: 5px; background-color: #282828; line-height: 0; margin-bottom: 20px;}
         
+        #canvas-container { border: 2px solid #444; border-radius: 8px; padding: 5px; background-color: #282828; line-height: 0; margin-bottom: 20px;}
         #code-display-wrapper { width: 100%; max-width: 720px; display: flex; flex-direction: column; align-items: center; }
         #code-display { width: 95%; height: 120px; background-color: #2b2b2b; color: #a9b7c6; border: 1px solid #444; border-radius: 5px; padding: 10px; font-family: 'Courier New', Courier, monospace; font-size: 14px; resize: vertical; }
+
+        /* 新增：下拉菜单默认隐藏 */
+        #mobile-selector-wrapper { display: none; width: 90%; }
+        #mobile-selector {
+            width: 100%;
+            padding: 12px;
+            background-color: #2c2c2c;
+            color: #fff;
+            border: 1px solid #444;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* ================================================== */
+        /*              响应式设计 (小屏幕)                    */
+        /* ================================================== */
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            header { 
+                padding-top: 0; /* 减少顶部 padding */
+                margin-bottom: 10px; /* 减少底部 margin */
+                transform: scale(0.8); /* 整体缩小标题区域 */
+                transform-origin: center top;
+            }
+            #controls-container { gap: 8px; } /* 减少控件组的垂直间距 */
+
+            /* 隐藏按钮组，显示下拉菜单 */
+            #button-container { display: none; }
+            #mobile-selector-wrapper { display: block; }
+            
+            /* 将三个控件整合到一行 */
+            #main-controls-row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+                justify-content: center;
+                width: 90%;
+            }
+            .control-wrapper {
+                flex-grow: 1; /* 让它们平分空间 */
+                flex-basis: 0; /* flex 布局技巧 */
+                width: auto;
+                min-width: 150px; /* 保证最小宽度 */
+                padding: 8px;
+                background-color: #2c2c2c;
+                border-radius: 8px;
+                border: 1px solid #444;
+                justify-content: space-between; /* 标签和控件两端对齐 */
+            }
+            .control-wrapper input[type="range"] { max-width: 100px; }
+            .control-wrapper.hidden {
+                 /* 在flex布局中，用 visibility 代替 display:none 更好 */
+                visibility: hidden;
+                opacity: 0;
+                flex-grow: 0;
+                min-width: 0;
+                padding: 0;
+                border: none;
+            }
+        }
+
     </style>
 </head>
 <body>
@@ -92,21 +125,30 @@
     </header>
 
     <div id="controls-container">
-        <div class="control-wrapper">
-            <label for="speed-slider">速度乘数:</label>
-            <input type="range" id="speed-slider" min="1" max="2" value="1" step="0.05">
-            <span id="speed-value">1.0x</span>
+        <!-- 小屏幕时显示的下拉菜单 -->
+        <div id="mobile-selector-wrapper">
+            <select id="mobile-selector"></select>
         </div>
-        <div class="control-wrapper">
-            <label for="color-toggle">启用彩虹模式:</label>
-            <input type="checkbox" id="color-toggle">
-        </div>
-        <div class="control-wrapper hidden" id="hue-slider-wrapper">
-            <label for="hue-speed-slider">颜色速度:</label>
-            <input type="range" id="hue-speed-slider" min="1" max="10" value="1" step="0.1">
-            <span id="hue-speed-value">1.0</span>
+
+        <!-- 整合后的控件行 -->
+        <div id="main-controls-row">
+            <div class="control-wrapper">
+                <label for="speed-slider">动画:</label> <!-- 简化标签 -->
+                <input type="range" id="speed-slider" min="1" max="2" value="1" step="0.05">
+                <span id="speed-value">1.0x</span>
+            </div>
+            <div class="control-wrapper">
+                <label for="color-toggle">彩虹:</label> <!-- 简化标签 -->
+                <input type="checkbox" id="color-toggle">
+            </div>
+            <div class="control-wrapper hidden" id="hue-slider-wrapper">
+                <label for="hue-speed-slider">颜色:</label> <!-- 简化标签 -->
+                <input type="range" id="hue-speed-slider" min="1" max="10" value="1" step="0.1">
+                <span id="hue-speed-value">1.0</span>
+            </div>
         </div>
         
+        <!-- 大屏幕时显示的按钮组 -->
         <div id="button-container">
             <div id="active-button-background"></div>
         </div>
@@ -137,19 +179,17 @@
         const hueSpeedSlider = document.getElementById('hue-speed-slider');
         const hueSpeedValueLabel = document.getElementById('hue-speed-value');
         const codeDisplay = document.getElementById('code-display');
+        const mobileSelector = document.getElementById('mobile-selector'); // 获取下拉菜单
 
         function applyRainbowColors(p, originalBg, originalStroke) {
             p.background(...originalBg);
-
             if (isColorChangeActive) {
                 p.colorMode(p.HSL, 360, 100, 100, 1);
-                
                 const time = p.frameCount * 0.05 * hueSpeedMultiplier;
                 const hue = p.map(p.sin(time), -1, 1, 0, 360);
                 const saturation = p.map(p.cos(time * 0.5), -1, 1, 50, 100);
                 const brightness = p.map(p.sin(time * 0.8), -1, 1, 50, 95);
                 p.stroke(hue, saturation, brightness);
-
             } else {
                 p.colorMode(p.RGB);
                 p.stroke(...originalStroke);
@@ -158,123 +198,31 @@
 
 
         const sketches = [
+            { name: "宇宙绽放", enName: "Cosmic Bloom", originalCode: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=>\npoint((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300)\nt=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`, originalBg: [6, 96], originalStroke: [400, 46], setup: function(p) { p.createCanvas(400, 400); this.t = 0; }, draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); this.t+=(p.PI/90)*speedMultiplier; const a=(x,y,t)=>{let k=x/8-12.5,e=y/8-12.5;let o=p.mag(k,e)/12*p.cos(p.sin(k/2)*p.cos(e/2));let d=5*p.cos(o);return p.point((x+d*k*(p.sin(d*2+t)+p.sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*p.cos(d+t))*1.5+300);}; for(let i=4e4;i--;)a(i%200,i/200,this.t); } },
+            { name: "电光之海", enName: "Sea of Light", originalCode: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130)\nt=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`, originalBg: [6, 96], originalStroke: [400, 46], setup: function(p) { p.createCanvas(400, 400); this.t = 0; }, draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); this.t+=(p.PI/90)*speedMultiplier; const a=(x,y,t)=>{let k=x/8-12.5,e=y/8-12.5;let o=3-p.mag(k,e)/3;let d=-4*(p.sin(k/2)*p.cos(e));return p.point((x+e*p.cos(t)+d*k*p.sin(d+t))*.7+k*o+130,(y-d*19+d*e*p.cos(d+t))*.7+130);}; for(let i=4e4;i--;)a(i%200,i/200,this.t); } },
+            { name: "混沌星爆", enName: "Chaos Burst", originalCode: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)\nt=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`, originalBg: [6, 96], originalStroke: [400, 46], setup: function(p) { p.createCanvas(400, 400); this.t = 0; }, draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); this.t+=(p.PI/90)*speedMultiplier; const a=(x,y,t)=>{let k=x/8-12,e=y/8-12;let o=2-p.mag(k,e)/3;let d=-5*p.abs(p.sin(k/2)*p.cos(e*.8));return p.point((x-d*k*4+d*k*p.sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*p.cos(d+t+o)*p.sin(t+d))*.7+e*o+70);}; for(let i=4e4;i--;)a(i%200,i/200,this.t); } },
+            { name: "丝绸星云", enName: "Silk Nebula", originalCode: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215]\nt=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=PI/60,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}`, originalBg: [6], originalStroke: [255, 66], setup: function(p) { p.createCanvas(400, 400); this.t = 0; }, draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); this.t+=(p.PI/60)*speedMultiplier; const a=(x,y,t)=>{let k=x/8-25,e=y/8-25;let d=5*p.cos(p.mag(k,e)/3);return[(x+d*k*p.sin(d*2.5-t)+k/2*p.sin(y/3+t))/2+100,d*19+(d-2)*5*p.abs(p.cos(d/2-t/2))+d*e+215];}; for(let y=100;y<300;y++)for(let x=100;x<300;x++)p.point(...a(x,y,this.t)); } },
+            { name: "水晶力场", enName: "Crystal Field", originalCode: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e]\ns=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=.02,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}`, originalBg: [6], originalStroke: [255, 196], setup: function(p) { p.createCanvas(400, 400); this.t = 0; this.s = 3; }, draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); p.randomSeed(0); this.t+=0.02*speedMultiplier; const a=(x,y,t)=>{let k=x/8-25,e=y/8-25;let d=2*p.cos(p.mag(k,e)/3-t);return[x+d*k,y+d*e];}; for(let y=100;y<300;y+=this.s)for(let x=100;x<300;x+=this.s)p.line(...p.shuffle([a(x,y,this.t),a(x,y+this.s,this.t),a(x+this.s,y,this.t)]).flat()); } },
+            { name: "几何引擎", enName: "Geometric Engine", originalCode: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`, originalBg: [0], originalStroke: [255], setup: function(p) { p.createCanvas(400, 400); this.t = 0; }, draw: function(p) { p.background(0); const s=p.PI/30; for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){for(let i=0;i<p.TAU;i+=s*2){if(isColorChangeActive){p.colorMode(p.HSL,360,100,100);const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;const hue=p.map(p.sin(time),-1,1,0,360);const sat=p.map(p.cos(time*0.5),-1,1,50,100);p.stroke(hue,sat,75);}else{p.colorMode(p.RGB);p.stroke(j*50);} const getCoords=([u,v])=>{let e=p.pow(v,3)*4+0;return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-t)-e*p.sin(u+j)];};p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));}} } },
             {
-                name: "宇宙绽放", enName: "Cosmic Bloom",
-                originalCode: `a=(x,y,d=5*cos(o=mag(k=x/8-12.5,e=y/8-12.5)/12*cos(sin(k/2)*cos(e/2))))=>\npoint((x+d*k*(sin(d*2+t)+sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*cos(d+t))*1.5+300)\nt=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`,
-                originalBg: [6, 96], originalStroke: [400, 46],
-                setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
-                draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); this.t+=(p.PI/90)*speedMultiplier; const a=(x,y,t)=>{let k=x/8-12.5,e=y/8-12.5;let o=p.mag(k,e)/12*p.cos(p.sin(k/2)*p.cos(e/2));let d=5*p.cos(o);return p.point((x+d*k*(p.sin(d*2+t)+p.sin(y*o*o)/9))/1.5+133,(y/3-d*40+19*p.cos(d+t))*1.5+300);}; for(let i=4e4;i--;)a(i%200,i/200,this.t); }
-            },
-            {
-                name: "电光之海", enName: "Sea of Light",
-                originalCode: `a=(x,y,o=3-mag(k=x/8-12.5,e=y/8-12)/3,d=-4*(sin(k/2)*cos(e)))=>point((x+e*cos(t)+d*k*sin(d+t))*.7+k*o+130,(y-d*19+d*e*cos(d+t))*.7+130)\nt=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`,
-                originalBg: [6, 96], originalStroke: [400, 46],
-                setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
-                draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); this.t+=(p.PI/90)*speedMultiplier; const a=(x,y,t)=>{let k=x/8-12.5,e=y/8-12.5;let o=3-p.mag(k,e)/3;let d=-4*(p.sin(k/2)*p.cos(e));return p.point((x+e*p.cos(t)+d*k*p.sin(d+t))*.7+k*o+130,(y-d*19+d*e*p.cos(d+t))*.7+130);}; for(let i=4e4;i--;)a(i%200,i/200,this.t); }
-            },
-            {
-                name: "混沌星爆", enName: "Chaos Burst",
-                originalCode: `a=(x,y,o=2-mag(k=x/8-12,e=y/8-12)/3,d=-5*abs(sin(k/2)*cos(e*.8)))=>point((x-d*k*4+d*k*sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*cos(d+t+o)*sin(t+d))*.7+e*o+70)\nt=0,draw=$=>{t||createCanvas(w=400,w);background(6,96).stroke(w,46);for(t+=PI/90,i=4e4;i--;)a(i%200,i/200)}`,
-                originalBg: [6, 96], originalStroke: [400, 46],
-                setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
-                draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); this.t+=(p.PI/90)*speedMultiplier; const a=(x,y,t)=>{let k=x/8-12,e=y/8-12;let o=2-p.mag(k,e)/3;let d=-5*p.abs(p.sin(k/2)*p.cos(e*.8));return p.point((x-d*k*4+d*k*p.sin(d+t))*.7+k*o*2+130,(y-d*y/5+d*e*p.cos(d+t+o)*p.sin(t+d))*.7+e*o+70);}; for(let i=4e4;i--;)a(i%200,i/200,this.t); }
-            },
-            {
-                name: "丝绸星云", enName: "Silk Nebula",
-                originalCode: `a=(x,y,d=5*cos(mag(k=x/8-25,e=y/8-25)/3))=>[(x+d*k*sin(d*2.5-t)+k/2*sin(y/3+t))/2+100,d*19+(d-2)*5*abs(cos(d/2-t/2))+d*e+215]\nt=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,66);for(t+=PI/60,y=100;y<300;y++)for(x=100;x<300;x++)point(...a(x,y))}`,
-                originalBg: [6], originalStroke: [255, 66],
-                setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
-                draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); this.t+=(p.PI/60)*speedMultiplier; const a=(x,y,t)=>{let k=x/8-25,e=y/8-25;let d=5*p.cos(p.mag(k,e)/3);return[(x+d*k*p.sin(d*2.5-t)+k/2*p.sin(y/3+t))/2+100,d*19+(d-2)*5*p.abs(p.cos(d/2-t/2))+d*e+215];}; for(let y=100;y<300;y++)for(let x=100;x<300;x++)p.point(...a(x,y,this.t)); }
-            },
-            {
-                name: "水晶力场", enName: "Crystal Field",
-                originalCode: `a=(x,y,d=2*cos(mag(k=x/8-25,e=y/8-25)/3-t))=>[x+d*k,y+d*e]\ns=3,t=0,draw=$=>{t||createCanvas(w=400,w);background(6).stroke(255,196).randomSeed(0);for(t+=.02,y=100;y<300;y+=s)for(x=100;x<300;x+=s)line(...shuffle([a(x,y),a(x,y+s),a(x+s,y)]).flat())}`,
-                originalBg: [6], originalStroke: [255, 196],
-                setup: function(p) { p.createCanvas(400, 400); this.t = 0; this.s = 3; },
-                draw: function(p) { applyRainbowColors(p, this.originalBg, this.originalStroke); p.randomSeed(0); this.t+=0.02*speedMultiplier; const a=(x,y,t)=>{let k=x/8-25,e=y/8-25;let d=2*p.cos(p.mag(k,e)/3-t);return[x+d*k,y+d*e];}; for(let y=100;y<300;y+=this.s)for(let x=100;x<300;x+=this.s)p.line(...p.shuffle([a(x,y,this.t),a(x,y+this.s,this.t),a(x+this.s,y,this.t)]).flat()); }
-            },
-            // ******** 经过最终修复的第六段动画 ********
-            {
-                name: "几何引擎", enName: "Geometric Engine",
-                originalCode: `t=0,draw=$=>{t||createCanvas(720,720);background(0);for(s=PI/30,j=(t+=s/4)/4%s;j<7;j+=s)for(i=0;i<TAU;i+=s*2)stroke(j*50).quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(([u,v,e=v**3*4+0])=>[e*cos(u+j)+e/v*sin(v*3-t)+360,360+e/v*cos(v*3-t)-e*sin(u+j)]))}`,
-                originalBg: [0], originalStroke: [255],
-                setup: function(p) { p.createCanvas(400, 400); this.t = 0; },
-                draw: function(p) { 
-                    p.background(0); 
-                    const s=p.PI/30; 
-                    for(let j=(this.t+=(s/4)*speedMultiplier)/4%s;j<7;j+=s){
-                        for(let i=0;i<p.TAU;i+=s*2){
-                            if(isColorChangeActive){
-                                p.colorMode(p.HSL,360,100,100);
-                                const time=p.frameCount*0.05*hueSpeedMultiplier+j*0.2;
-                                const hue=p.map(p.sin(time),-1,1,0,360);
-                                const sat=p.map(p.cos(time*0.5),-1,1,50,100);
-                                p.stroke(hue,sat,75);
-                            } else {
-                                p.colorMode(p.RGB);
-                                p.stroke(j*50);
-                            } 
-                            const getCoords=([u,v])=>{
-                                let e=p.pow(v,3)*4+0;
-                                return[e*p.cos(u+j)+e/v*p.sin(v*3-this.t)+200,200+e/v*p.cos(v*3-this.t)-e*p.sin(u+j)];
-                            };
-                            p.quad(...[[i+s,j],[i,j],[i+s,j+s],[i,j+s]].flatMap(getCoords));
-                        }
-                    } 
-                }
-            },
-            // ******** 经过最终修复的第七段动画 ********
-            {
-                name: "星尘回响", enName: "Stardust Echo",
-                originalCode: `$= [],draw=_=>{$[0]??createCanvas(w=540,w);background(0,6);$=$.map((v,i)=>stroke(w,62).point(v.add(sin(v.y*(r=4+9/cos(v.mag()*2-frameCount/99)))/i*9,cos(r*v.x)/i*9,-v.z/3).copy().add(3,3).mult(90)))[3e3]?$.slice(-2985):[...$,...[...'#つぶやきProcessing'].map(p5.Vector.random3D)]}`,
-                originalBg: [0, 6], originalStroke: [540, 62],
-                setup: function(p) {
-                    p.createCanvas(540, 540); // 忠于原始画布尺寸
-                    this.particles = [];
-                },
-                draw: function(p) {
-                    p.background(0, 6);
-                    const time = p.frameCount * speedMultiplier;
-
-                    // 核心：使用 .map 更新粒子数组，同时绘制
-                    this.particles = this.particles.map((v, i) => {
-                        if (isColorChangeActive) {
-                            p.colorMode(p.HSL, 360, 100, 100, 1);
-                            const hue = (p.frameCount * hueSpeedMultiplier + i * 0.1) % 360;
-                            p.stroke(hue, 90, 70);
-                        } else {
-                             p.colorMode(p.RGB);
-                            p.stroke(p.width, 62);
-                        }
-                        
-                        // 修复后的核心数学逻辑
-                        let r = 4 + 9 / p.cos(v.mag() * 2 - time / 99);
-                        // 防止 i=0 时除以零
-                        v.add(p.sin(v.y * r) / (i + 1) * 9, p.cos(r * v.x) / (i + 1) * 9, -v.z / 3);
-                        p.point(v.x, v.y);
-                        
-                        // 返回一个被修改过的 v 的副本，并应用后续的变换
-                        return v.copy().add(3, 3).mult(90);
-                    });
-
-                    // 粒子管理
-                    if (this.particles.length >= 3000) {
-                        this.particles = this.particles.slice(-2985);
-                    } else {
-                        // 修复语法错误，并明确粒子生成逻辑
-                        const newParticles = [...'#p5.js'].map(() => 
-                            p.createVector(p.random(p.width), p.random(p.height), p.random(-1,1))
-                        );
-                        this.particles.push(...newParticles);
-                    }
-                }
+                name: "低语粒子", enName: "Whispering Particles",
+                originalCode: "$=[],t=0,draw=_=>{t++||createCanvas(540,540);background(0,9);$=[...$.slice(-5e3),...[...Array(15)].map(p5.Vector.random3D)];$.map(v=>stroke(255,96).point((v.x+=sin((r=9*((v.x*(k=v.x+5+v.y)^v.y*k+t/90)&7)-.1)*v.y)/119)*119+270,(v.y+=cos(v.x*r)/119)*119+270))}",
+                originalBg: [0, 9], originalStroke: [255, 96],
+                setup: function(p) { p.createCanvas(400, 400); this.particles = []; this.t = 0; },
+                draw: function(p) { p.background(0, 9); this.t++; const time=this.t*speedMultiplier; if(this.particles.length<5000){const newParticles=[...Array(15)].map(()=>p.createVector(p.random(-1,1),p.random(-1,1),p.random(-1,1)));this.particles.push(...newParticles);}this.particles=this.particles.slice(-5000);this.particles.forEach(v=>{if(isColorChangeActive){p.colorMode(p.HSL,360,100,100,1);const hue=(p.frameCount*hueSpeedMultiplier)%360;p.stroke(hue,90,70,0.7);}else{p.colorMode(p.RGB);p.stroke(255,96);}const k=v.x+5+v.y;const r=9*((p.floor(v.x*k)^p.floor(v.y*k)+p.floor(time/90))&7)-0.1;v.x+=p.sin(r*v.y)/119;v.y+=p.cos(v.x*r)/119;p.point(v.x*119+270,v.y*119+270);});}
             }
         ];
 
-        // 事件监听器等其他代码保持不变
+        // 事件监听器
         speedSlider.addEventListener('input', (e) => { speedMultiplier=parseFloat(e.target.value); speedValueLabel.textContent=`${speedMultiplier.toFixed(1)}x`; });
         hueSpeedSlider.addEventListener('input', (e) => { hueSpeedMultiplier=parseFloat(e.target.value); hueSpeedValueLabel.textContent=hueSpeedMultiplier.toFixed(1); });
         colorToggle.addEventListener('change', (e) => { isColorChangeActive=e.target.checked; hueSliderWrapper.classList.toggle('hidden',!isColorChangeActive); });
+        
+        // 新增：下拉菜单的事件监听
+        mobileSelector.addEventListener('change', (e) => {
+            const selectedIndex = parseInt(e.target.value);
+            runSketch(sketches[selectedIndex], selectedIndex);
+        });
         
         function runSketch(sketchData, index) {
             if (activeSnippetIndex === index && currentSketch) return;
@@ -295,7 +243,9 @@
             }, 'canvas-container');
         }
 
+        // 更新 UI 的函数现在也需要更新下拉菜单
         function updateActiveButton() {
+            // 更新按钮组（大屏幕）
             const allButtons = buttonContainer.querySelectorAll('button');
             allButtons.forEach((button, i) => {
                 button.classList.toggle('active', i === activeSnippetIndex);
@@ -311,13 +261,24 @@
                 activeButtonBackground.style.setProperty('--width', `${width}px`);
                 activeButtonBackground.style.setProperty('--height', `${height}px`);
             }
+            
+            // 更新下拉菜单（小屏幕）
+            mobileSelector.value = activeSnippetIndex;
         }
 
+        // 创建按钮和下拉菜单选项
         sketches.forEach((sketchData, index) => {
+            // 创建按钮
             const button = document.createElement('button');
             button.innerHTML = `${sketchData.name}<span class="en-name">${sketchData.enName}</span>`;
             button.addEventListener('click', () => runSketch(sketchData, index));
             buttonContainer.appendChild(button);
+            
+            // 创建下拉菜单选项
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `${sketchData.name} / ${sketchData.enName}`;
+            mobileSelector.appendChild(option);
         });
 
         if (sketches.length > 0) {
